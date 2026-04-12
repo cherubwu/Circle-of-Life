@@ -86,7 +86,7 @@ blockquote {
   box-shadow: 0 0 20px rgba(124,58,237,0.1);
 }
 
-/* Mascot avatar */
+/* Brain mascot avatar */
 blockquote::before {
   content: '';
   position: absolute;
@@ -94,22 +94,10 @@ blockquote::before {
   top: 0.8rem;
   width: 2.4rem;
   height: 2.4rem;
-  background:
-    radial-gradient(circle at 35% 35%, #a78bfa, #7c3aed);
+  background: url('/Circle-of-Life/brain-mascot.jpg') center/cover;
   border-radius: 50%;
-  border: 2px solid rgba(167,139,250,0.6);
-  box-shadow: 0 0 12px rgba(124,58,237,0.5);
-}
-
-/* DNA face on mascot */
-blockquote::after {
-  content: '🧬';
-  position: absolute;
-  left: -3.05rem;
-  top: 0.9rem;
-  font-size: 1.3rem;
-  line-height: 1;
-  filter: drop-shadow(0 0 4px rgba(124,58,237,0.8));
+  border: 2px solid rgba(255,182,210,0.7);
+  box-shadow: 0 0 14px rgba(255,182,210,0.4), 0 0 4px rgba(124,58,237,0.4);
 }
 
 /* Speech bubble tail */
