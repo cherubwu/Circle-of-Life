@@ -15,7 +15,7 @@ const base = '/Circle-of-Life';
     <a href="https://your-substack.substack.com" target="_blank" class="hero-cta">
       {lang === 'zh' ? '订阅周刊 →' : 'Subscribe →'}
     </a>
-    <p class="graph-hint">{lang === 'zh' ? '→ 点击右侧节点探索相关文章' : '→ Click nodes to explore articles'}</p>
+    <p class="graph-hint">{lang === 'zh' ? '→ 拖拽行星 · 悬停查看 · 点击文章' : '→ Drag planets · Hover to reveal · Click for articles'}</p>
   </div>
 </section>
 
@@ -26,46 +26,47 @@ let W = 0, H = 0;
 let t = 0;
 
 /* ── Mouse / comet ── */
-const mouse = { x: -9999, y: -9999 };
+const mouse = { x: -9999, y: -9999, down: false };
 const cometTrail = [];
 const TRAIL_LEN = 28;
 
-window.addEventListener('mousemove', e => {
+function onMouseMove(e) {
   const r = canvas.getBoundingClientRect();
   mouse.x = e.clientX - r.left;
   mouse.y = e.clientY - r.top;
   cometTrail.unshift({ x: mouse.x, y: mouse.y });
   if (cometTrail.length > TRAIL_LEN) cometTrail.pop();
-});
+}
+window.addEventListener('mousemove', onMouseMove);
 
 function resize() {
   W = canvas.width = canvas.offsetWidth;
   H = canvas.height = canvas.offsetHeight;
-  placeNodes();
+  initKGPositions();
 }
 window.addEventListener('resize', resize);
 
-/* ── Knowledge graph nodes (right side) ── */
+/* ── Knowledge graph data ── */
 const KG_NODES = [
-  { id: 'metabolism', label: lang === 'zh' ? '代谢' : 'Metabolism',   color: '#10b981', size: 26, url: null,   type: 'root' },
-  { id: 'neuro',      label: lang === 'zh' ? '脑科学' : 'Neuroscience', color: '#7c3aed', size: 26, url: null,   type: 'root' },
-  { id: 'immune',     label: lang === 'zh' ? '免疫' : 'Immunology',    color: '#f59e0b', size: 26, url: null,   type: 'root' },
+  { id: 'metabolism', label: lang === 'zh' ? '代谢' : 'Metabolism',    color: '#10b981', r: 28, url: null,   type: 'root', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'neuro',      label: lang === 'zh' ? '脑科学' : 'Neuroscience', color: '#7c3aed', r: 28, url: null,   type: 'root', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'immune',     label: lang === 'zh' ? '免疫' : 'Immunology',     color: '#f59e0b', r: 28, url: null,   type: 'root', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
 
-  { id: 'mash',    label: 'MASH/MASLD', color: '#34d399', size: 16, url: `${base}/blog/mash-pipeline-en/`, type: 'leaf' },
-  { id: 'glp1',    label: 'GLP-1',       color: '#34d399', size: 16, url: null, type: 'leaf' },
-  { id: 'lipid',   label: lang === 'zh' ? '脂质' : 'Lipid',      color: '#34d399', size: 14, url: null, type: 'leaf' },
-  { id: 'insulin', label: lang === 'zh' ? '胰岛素' : 'Insulin',   color: '#34d399', size: 14, url: null, type: 'leaf' },
-  { id: 'mito',    label: lang === 'zh' ? '线粒体' : 'Mitochondria', color: '#34d399', size: 14, url: null, type: 'leaf' },
+  { id: 'mash',     label: 'MASH/MASLD',  color: '#34d399', r: 18, url: `${base}/blog/mash-pipeline-en/`, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'glp1',     label: 'GLP-1',        color: '#34d399', r: 16, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'lipid',    label: lang==='zh'?'脂质':'Lipid',        color: '#34d399', r: 14, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'insulin',  label: lang==='zh'?'胰岛素':'Insulin',    color: '#34d399', r: 14, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'mito',     label: lang==='zh'?'线粒体':'Mitochondria',color: '#34d399', r: 14, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
 
-  { id: 'bci',        label: 'BCI',                         color: '#a78bfa', size: 16, url: `${base}/blog/BCI-future-en/`, type: 'leaf' },
-  { id: 'alzheimer',  label: "Alzheimer's",                 color: '#a78bfa', size: 14, url: null, type: 'leaf' },
-  { id: 'parkinson',  label: "Parkinson's",                 color: '#a78bfa', size: 14, url: null, type: 'leaf' },
-  { id: 'neuromod',   label: lang === 'zh' ? '神经调控' : 'Neuromod', color: '#a78bfa', size: 14, url: null, type: 'leaf' },
+  { id: 'bci',       label: 'BCI',           color: '#a78bfa', r: 18, url: `${base}/blog/BCI-future-en/`, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'alzheimer', label: "Alzheimer's",   color: '#a78bfa', r: 14, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'parkinson', label: "Parkinson's",   color: '#a78bfa', r: 14, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'neuromod',  label: lang==='zh'?'神经调控':'Neuromod', color: '#a78bfa', r: 13, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
 
-  { id: 'cart',       label: 'CAR-T',                       color: '#fcd34d', size: 16, url: null, type: 'leaf' },
-  { id: 'checkpoint', label: lang === 'zh' ? '检查点' : 'Checkpoint', color: '#fcd34d', size: 14, url: null, type: 'leaf' },
-  { id: 'autoimmune', label: lang === 'zh' ? '自身免疫' : 'Autoimmune', color: '#fcd34d', size: 14, url: null, type: 'leaf' },
-  { id: 'senescence', label: lang === 'zh' ? '衰老' : 'Senescence', color: '#fcd34d', size: 14, url: null, type: 'leaf' },
+  { id: 'cart',       label: 'CAR-T',          color: '#fcd34d', r: 16, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'checkpoint', label: lang==='zh'?'检查点':'Checkpoint', color: '#fcd34d', r: 13, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'autoimmune', label: lang==='zh'?'自身免疫':'Autoimmune',color: '#fcd34d', r: 13, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'senescence', label: lang==='zh'?'衰老':'Senescence',   color: '#fcd34d', r: 13, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
 ];
 
 const KG_LINKS = [
@@ -76,188 +77,223 @@ const KG_LINKS = [
   ['glp1','mash'],['senescence','mito'],['insulin','alzheimer'],
 ];
 
-/* ── Background ambient nodes (non-interactive, fill left side) ── */
+const nodeMap = Object.fromEntries(KG_NODES.map(n => [n.id, n]));
+
+function initKGPositions() {
+  const cx = W * 0.7, cy = H * 0.5;
+  const roots = KG_NODES.filter(n => n.type === 'root');
+  roots.forEach((r, i) => {
+    const angle = (i / roots.length) * Math.PI * 2 - Math.PI / 2;
+    r.x = cx + Math.cos(angle) * Math.min(W, H) * 0.13;
+    r.y = cy + Math.sin(angle) * Math.min(W, H) * 0.13;
+  });
+  KG_NODES.filter(n => n.type === 'leaf').forEach((n, i) => {
+    n.x = cx + (Math.random() - 0.5) * W * 0.35;
+    n.y = cy + (Math.random() - 0.5) * H * 0.45;
+  });
+}
+
+/* ── Force simulation ── */
+function tickForce() {
+  const alpha = 0.06;
+  // Link forces
+  for (const [sid, tid] of KG_LINKS) {
+    const s = nodeMap[sid], t2 = nodeMap[tid];
+    if (!s || !t2) continue;
+    const ideal = (s.type==='root'||t2.type==='root') ? 110 : 70;
+    const dx = t2.x - s.x, dy = t2.y - s.y;
+    const dist = Math.sqrt(dx*dx+dy*dy) || 1;
+    const f = (dist - ideal) / dist * alpha * 0.5;
+    if (!s.fx) { s.vx += dx*f; s.vy += dy*f; }
+    if (!t2.fx) { t2.vx -= dx*f; t2.vy -= dy*f; }
+  }
+  // Repulsion
+  for (let i = 0; i < KG_NODES.length; i++) {
+    for (let j = i+1; j < KG_NODES.length; j++) {
+      const a = KG_NODES[i], b = KG_NODES[j];
+      const dx = b.x-a.x, dy = b.y-a.y;
+      const dist = Math.sqrt(dx*dx+dy*dy) || 1;
+      const minDist = a.r + b.r + 20;
+      if (dist < minDist) {
+        const f = (minDist - dist) / dist * 0.3;
+        if (!a.fx) { a.vx -= dx*f; a.vy -= dy*f; }
+        if (!b.fx) { b.vx += dx*f; b.vy += dy*f; }
+      }
+    }
+  }
+  // Center pull (right half)
+  const cx = W*0.7, cy = H*0.5;
+  KG_NODES.forEach(n => {
+    if (n.fx !== null) { n.x = n.fx; n.y = n.fy; return; }
+    n.vx += (cx - n.x) * 0.003;
+    n.vy += (cy - n.y) * 0.003;
+    n.vx *= 0.85; n.vy *= 0.85;
+    n.x += n.vx; n.y += n.vy;
+    // Keep in right half
+    n.x = Math.max(W*0.48 + n.r, Math.min(W - n.r, n.x));
+    n.y = Math.max(n.r, Math.min(H - n.r, n.y));
+  });
+}
+
+/* ── Drag ── */
+let dragging = null;
+
+canvas.addEventListener('mousedown', e => {
+  const r = canvas.getBoundingClientRect();
+  const px = e.clientX - r.left, py = e.clientY - r.top;
+  for (const n of KG_NODES) {
+    const dx = px-n.x, dy = py-n.y;
+    if (dx*dx+dy*dy < (n.r+6)**2) { dragging = n; n.fx = n.x; n.fy = n.y; break; }
+  }
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (dragging) { dragging.fx = mouse.x; dragging.fy = mouse.y; }
+});
+
+canvas.addEventListener('mouseup', e => {
+  if (dragging) { dragging.fx = null; dragging.fy = null; dragging = null; }
+});
+
+canvas.addEventListener('click', e => {
+  if (dragging) return;
+  const r = canvas.getBoundingClientRect();
+  const px = e.clientX - r.left, py = e.clientY - r.top;
+  for (const n of KG_NODES) {
+    const dx = px-n.x, dy = py-n.y;
+    if (dx*dx+dy*dy < (n.r+6)**2 && n.url) { window.location.href = n.url; break; }
+  }
+});
+
+/* ── Hover detection ── */
+let hoveredNode = null;
+canvas.addEventListener('mousemove', () => {
+  if (dragging) { canvas.style.cursor = 'grabbing'; return; }
+  hoveredNode = null;
+  for (const n of KG_NODES) {
+    const dx = mouse.x-n.x, dy = mouse.y-n.y;
+    if (dx*dx+dy*dy < (n.r+8)**2) { hoveredNode = n; break; }
+  }
+  canvas.style.cursor = hoveredNode ? (hoveredNode.url ? 'pointer' : 'grab') : 'none';
+});
+
+/* ── Background ambient nodes ── */
 const BG_NODES = Array.from({ length: 45 }, () => ({
-  x: Math.random(),
-  y: Math.random(),
-  vx: (Math.random() - 0.5) * 0.00012,
-  vy: (Math.random() - 0.5) * 0.00012,
-  r: Math.random() * 2 + 0.8,
-  pulse: Math.random() * Math.PI * 2,
-  pSpeed: 0.02 + Math.random() * 0.025,
+  x: Math.random(), y: Math.random(),
+  vx: (Math.random()-0.5)*0.00012, vy: (Math.random()-0.5)*0.00012,
+  r: Math.random()*2+0.8,
+  pulse: Math.random()*Math.PI*2, pSpeed: 0.02+Math.random()*0.025,
   col: ['rgba(167,139,250,','rgba(6,182,212,','rgba(16,185,129,'][Math.floor(Math.random()*3)],
 }));
 
-/* ── Signal packets ── */
+/* ── Signals ── */
 const signals = [];
 function spawnSignal() {
-  // Signals on KG links
-  if (KG_LINKS.length > 0 && Math.random() > 0.4) {
-    const link = KG_LINKS[Math.floor(Math.random() * KG_LINKS.length)];
-    const from = KG_NODES.find(n => n.id === link[0]);
-    const to   = KG_NODES.find(n => n.id === link[1]);
-    if (from && to && from.x !== undefined) {
-      signals.push({ fromX: from.x, fromY: from.y, toX: to.x, toY: to.y,
-        progress: 0, speed: 0.006 + Math.random() * 0.008,
-        col: from.color, isKG: true });
+  const link = KG_LINKS[Math.floor(Math.random()*KG_LINKS.length)];
+  const s = nodeMap[link[0]], t2 = nodeMap[link[1]];
+  if (s && t2) signals.push({ s, t2, progress: 0, speed: 0.006+Math.random()*0.007 });
+}
+setInterval(spawnSignal, 350);
+
+/* ── Draw planet ── */
+function drawPlanet(n) {
+  const isHov = n === hoveredNode;
+  const isDrag = n === dragging;
+  const pulse = isDrag ? 1.15 : (1 + Math.sin(t*1.5 + n.x*0.005)*0.1);
+  const r = n.r * pulse;
+
+  // Outer atmospheric glow
+  const atm = ctx.createRadialGradient(n.x, n.y, r*0.5, n.x, n.y, r*3);
+  atm.addColorStop(0, n.color + (isHov||isDrag ? '40' : '22'));
+  atm.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.beginPath(); ctx.arc(n.x, n.y, r*3, 0, Math.PI*2);
+  ctx.fillStyle = atm; ctx.fill();
+
+  // Planet body gradient
+  const body = ctx.createRadialGradient(n.x - r*0.35, n.y - r*0.35, r*0.05, n.x + r*0.1, n.y + r*0.1, r);
+  body.addColorStop(0, 'rgba(255,255,255,0.35)');
+  body.addColorStop(0.4, n.color + 'cc');
+  body.addColorStop(1, n.color + '44');
+  ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI*2);
+  ctx.fillStyle = body; ctx.fill();
+
+  // Surface bands (root nodes only)
+  if (n.type === 'root') {
+    ctx.save();
+    ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI*2); ctx.clip();
+    for (let b = -1; b <= 2; b++) {
+      ctx.beginPath();
+      ctx.ellipse(n.x, n.y + b*r*0.3, r, r*0.08, 0, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(0,0,0,0.12)'; ctx.fill();
     }
-  } else {
-    // BG ambient signals
-    const from = BG_NODES[Math.floor(Math.random() * BG_NODES.length)];
-    const to   = BG_NODES[Math.floor(Math.random() * BG_NODES.length)];
-    signals.push({ fromX: from.x * W, fromY: from.y * H,
-      toX: to.x * W, toY: to.y * H,
-      progress: 0, speed: 0.004 + Math.random() * 0.006,
-      col: from.col + '', isKG: false });
+    ctx.restore();
+  }
+
+  // Ring for some nodes
+  if (n.type === 'root') {
+    ctx.save();
+    ctx.translate(n.x, n.y); ctx.scale(1, 0.28);
+    ctx.beginPath(); ctx.arc(0, 0, r*1.85, 0, Math.PI*2);
+    ctx.strokeStyle = n.color + '55'; ctx.lineWidth = r*0.45; ctx.stroke();
+    // Re-draw planet over ring
+    ctx.restore();
+    ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI*2);
+    ctx.fillStyle = body; ctx.fill();
+  }
+
+  // Specular highlight
+  ctx.beginPath(); ctx.arc(n.x - r*0.3, n.y - r*0.3, r*0.35, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fill();
+
+  // Border
+  ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI*2);
+  ctx.strokeStyle = n.color + (isHov||isDrag ? 'ff' : '88');
+  ctx.lineWidth = isHov||isDrag ? 2 : 1.2; ctx.stroke();
+
+  // URL indicator
+  if (n.url) {
+    ctx.beginPath(); ctx.arc(n.x + r*0.7, n.y - r*0.7, 4, 0, Math.PI*2);
+    ctx.fillStyle = isHov ? '#ffffff' : '#a78bfa'; ctx.fill();
+  }
+
+  // Label — ONLY on hover or drag
+  if (isHov || isDrag) {
+    const label = n.url ? `${n.label} →` : n.label;
+    const fSize = Math.max(10, n.r * 0.72);
+    ctx.font = `bold ${fSize}px sans-serif`;
+    const tw = ctx.measureText(label).width;
+    const px = n.x, py = n.y - r - 12;
+    // Background pill
+    ctx.fillStyle = 'rgba(10,5,25,0.85)';
+    ctx.beginPath();
+    ctx.roundRect(px - tw/2 - 8, py - fSize/2 - 4, tw + 16, fSize + 8, 6);
+    ctx.fill();
+    ctx.strokeStyle = n.color + '88'; ctx.lineWidth = 1; ctx.stroke();
+    // Text
+    ctx.fillStyle = '#f1f5f9';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(label, px, py);
   }
 }
-setInterval(spawnSignal, 300);
 
-/* ── Position KG nodes using force layout ── */
-function placeNodes() {
-  const cx = W * 0.7, cy = H * 0.5;
-  const roots = KG_NODES.filter(n => n.type === 'root');
-  const rootAngle = (Math.PI * 2) / roots.length;
-  const rootR = Math.min(W, H) * 0.14;
-  const leafR  = Math.min(W, H) * 0.11;
-
-  roots.forEach((r, i) => {
-    r.x = cx + Math.cos(i * rootAngle - Math.PI/2) * rootR;
-    r.y = cy + Math.sin(i * rootAngle - Math.PI/2) * rootR;
-
-    const children = KG_LINKS
-      .filter(l => l[0] === r.id)
-      .map(l => KG_NODES.find(n => n.id === l[1]))
-      .filter(Boolean);
-
-    children.forEach((child, j) => {
-      const spread = (Math.PI * 0.7) / Math.max(children.length - 1, 1);
-      const baseAngle = i * rootAngle - Math.PI/2;
-      const childAngle = baseAngle - spread * (children.length - 1) / 2 + spread * j;
-      child.x = r.x + Math.cos(childAngle) * leafR;
-      child.y = r.y + Math.sin(childAngle) * leafR;
-    });
-  });
-
-  // Cross links need positions too
-  KG_NODES.filter(n => !n.x).forEach(n => {
-    n.x = cx + (Math.random() - 0.5) * W * 0.2;
-    n.y = cy + (Math.random() - 0.5) * H * 0.3;
-  });
-}
-
-/* ── Click detection ── */
-let hoveredNode = null;
-
-canvas.addEventListener('mousemove', () => {
-  hoveredNode = null;
-  for (const n of KG_NODES) {
-    if (!n.x) continue;
-    const dx = mouse.x - n.x, dy = mouse.y - n.y;
-    if (dx*dx + dy*dy < (n.size + 8) ** 2) {
-      hoveredNode = n;
-      break;
-    }
-  }
-  canvas.style.cursor = hoveredNode?.url ? 'pointer' : 'none';
-});
-
-canvas.addEventListener('click', () => {
-  if (hoveredNode?.url) window.location.href = hoveredNode.url;
-});
-
-/* ── Draw comet trail ── */
+/* ── Draw comet ── */
 function drawComet() {
   if (cometTrail.length < 2) return;
   for (let i = 1; i < cometTrail.length; i++) {
-    const ratio = 1 - i / cometTrail.length;
-    const prev = cometTrail[i-1], curr = cometTrail[i];
-    ctx.beginPath();
-    ctx.moveTo(prev.x, prev.y);
-    ctx.lineTo(curr.x, curr.y);
-    ctx.strokeStyle = `rgba(255,255,255,${ratio * 0.55})`;
-    ctx.lineWidth = ratio * 3;
-    ctx.lineCap = 'round';
-    ctx.stroke();
+    const ratio = 1 - i/cometTrail.length;
+    const a = cometTrail[i-1], b = cometTrail[i];
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+    ctx.strokeStyle = `rgba(255,255,255,${ratio*0.55})`;
+    ctx.lineWidth = ratio*3; ctx.lineCap = 'round'; ctx.stroke();
   }
-  // Comet head
-  if (cometTrail[0]) {
-    const g = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 10);
-    g.addColorStop(0, 'rgba(255,255,255,0.9)');
-    g.addColorStop(0.4, 'rgba(167,139,250,0.6)');
-    g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.beginPath();
-    ctx.arc(mouse.x, mouse.y, 10, 0, Math.PI * 2);
-    ctx.fillStyle = g;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(mouse.x, mouse.y, 3, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,255,255,0.95)';
-    ctx.fill();
-  }
-}
-
-/* ── Draw KG ── */
-function drawKG() {
-  // Links
-  for (const [src, tgt] of KG_LINKS) {
-    const s = KG_NODES.find(n => n.id === src);
-    const t2 = KG_NODES.find(n => n.id === tgt);
-    if (!s?.x || !t2?.x) continue;
-    ctx.beginPath();
-    ctx.moveTo(s.x, s.y);
-    ctx.lineTo(t2.x, t2.y);
-    ctx.strokeStyle = 'rgba(45,45,78,0.8)';
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
-  }
-
-  // Nodes
-  for (const n of KG_NODES) {
-    if (!n.x) continue;
-    const isHov = n === hoveredNode;
-    const pulse = 1 + Math.sin(t * 1.5 + n.x * 0.01) * 0.12;
-    const r = n.size * pulse;
-
-    // Outer glow
-    const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 2.5);
-    g.addColorStop(0, n.color + (isHov ? '55' : '30'));
-    g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.beginPath();
-    ctx.arc(n.x, n.y, r * 2.5, 0, Math.PI * 2);
-    ctx.fillStyle = g;
-    ctx.fill();
-
-    // Circle fill
-    const fill = ctx.createRadialGradient(n.x - r*0.3, n.y - r*0.3, 1, n.x, n.y, r);
-    fill.addColorStop(0, n.color + (n.type === 'root' ? 'aa' : '55'));
-    fill.addColorStop(1, n.color + (n.type === 'root' ? '33' : '18'));
-    ctx.beginPath();
-    ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
-    ctx.fillStyle = fill;
-    ctx.fill();
-    ctx.strokeStyle = n.color + (isHov ? 'ff' : '99');
-    ctx.lineWidth = isHov ? 2 : 1.5;
-    ctx.stroke();
-
-    // URL indicator dot
-    if (n.url) {
-      ctx.beginPath();
-      ctx.arc(n.x + r * 0.65, n.y - r * 0.65, 3.5, 0, Math.PI * 2);
-      ctx.fillStyle = isHov ? '#ffffff' : '#a78bfa';
-      ctx.fill();
-    }
-
-    // Label
-    ctx.fillStyle = n.color;
-    ctx.font = `${n.type === 'root' ? 'bold ' : ''}${Math.max(9, n.size * 0.7)}px sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.8)';
-    ctx.shadowBlur = 6;
-    ctx.fillText(n.label, n.x, n.y);
-    ctx.shadowBlur = 0;
-  }
+  const g = ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,10);
+  g.addColorStop(0,'rgba(255,255,255,0.9)');
+  g.addColorStop(0.4,'rgba(167,139,250,0.6)');
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath(); ctx.arc(mouse.x,mouse.y,10,0,Math.PI*2);
+  ctx.fillStyle = g; ctx.fill();
+  ctx.beginPath(); ctx.arc(mouse.x,mouse.y,2.5,0,Math.PI*2);
+  ctx.fillStyle = 'rgba(255,255,255,0.95)'; ctx.fill();
 }
 
 /* ── Main loop ── */
@@ -265,110 +301,75 @@ function animate() {
   t += 0.014;
   ctx.clearRect(0, 0, W, H);
 
-  // Background gradient
-  const bg = ctx.createLinearGradient(0, 0, W, H);
-  bg.addColorStop(0, '#05050e');
-  bg.addColorStop(0.5, '#090916');
-  bg.addColorStop(1, '#070710');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, H);
+  // BG
+  const bg = ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#05050e'); bg.addColorStop(0.5,'#090916'); bg.addColorStop(1,'#070710');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
 
-  // Ambient glows
-  [[W*0.18, H*0.4, 300, 'rgba(124,58,237,0.055)'],
-   [W*0.72, H*0.5, 260, 'rgba(6,182,212,0.04)'],
-   [W*0.5,  H*0.2, 180, 'rgba(16,185,129,0.03)']].forEach(([bx,by,br,bc]) => {
-    const g = ctx.createRadialGradient(bx,by,0,bx,by,br);
-    g.addColorStop(0, bc);
-    g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, W, H);
+  // Ambient
+  [[W*0.18,H*0.4,300,'rgba(124,58,237,0.055)'],[W*0.72,H*0.5,260,'rgba(6,182,212,0.04)'],[W*0.5,H*0.2,180,'rgba(16,185,129,0.03)']].forEach(([bx,by,br,bc])=>{
+    const g=ctx.createRadialGradient(bx,by,0,bx,by,br);
+    g.addColorStop(0,bc); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
   });
 
-  // Update & draw BG nodes
-  const CDIST = Math.min(W, H) * 0.18;
+  // BG ambient nodes
+  const CDIST = Math.min(W,H)*0.18;
   BG_NODES.forEach(n => {
-    n.x += n.vx; n.y += n.vy;
-    if (n.x < 0 || n.x > 1) n.vx *= -1;
-    if (n.y < 0 || n.y > 1) n.vy *= -1;
-    n.pulse += n.pSpeed;
+    n.x+=n.vx; n.y+=n.vy;
+    if(n.x<0||n.x>1)n.vx*=-1; if(n.y<0||n.y>1)n.vy*=-1;
+    n.pulse+=n.pSpeed;
+    const px=n.x*W,py=n.y*H,r=n.r*(1+Math.sin(n.pulse)*0.3);
+    const g=ctx.createRadialGradient(px,py,0,px,py,r*3.5);
+    g.addColorStop(0,n.col+'0.2)'); g.addColorStop(1,n.col+'0)');
+    ctx.beginPath(); ctx.arc(px,py,r*3.5,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+    ctx.beginPath(); ctx.arc(px,py,r,0,Math.PI*2);
+    ctx.fillStyle=n.col+`${0.5+Math.sin(n.pulse)*0.25})`; ctx.fill();
   });
 
   // BG edges
-  for (let i = 0; i < BG_NODES.length; i++) {
-    for (let j = i+1; j < BG_NODES.length; j++) {
-      const a = BG_NODES[i], b = BG_NODES[j];
-      const dx = (a.x-b.x)*W, dy = (a.y-b.y)*H;
-      const dist = Math.sqrt(dx*dx+dy*dy);
-      if (dist < CDIST) {
-        ctx.beginPath();
-        ctx.moveTo(a.x*W, a.y*H);
-        ctx.lineTo(b.x*W, b.y*H);
-        ctx.strokeStyle = `rgba(167,139,250,${(1-dist/CDIST)*0.12})`;
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
-      }
-    }
+  for(let i=0;i<BG_NODES.length;i++) for(let j=i+1;j<BG_NODES.length;j++){
+    const a=BG_NODES[i],b=BG_NODES[j];
+    const dx=(a.x-b.x)*W,dy=(a.y-b.y)*H,dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<CDIST){ctx.beginPath();ctx.moveTo(a.x*W,a.y*H);ctx.lineTo(b.x*W,b.y*H);ctx.strokeStyle=`rgba(167,139,250,${(1-dist/CDIST)*0.1})`;ctx.lineWidth=0.5;ctx.stroke();}
   }
 
-  // BG node circles
-  BG_NODES.forEach(n => {
-    const px = n.x*W, py = n.y*H;
-    const r = n.r * (1 + Math.sin(n.pulse)*0.3);
-    const g = ctx.createRadialGradient(px,py,0,px,py,r*3.5);
-    g.addColorStop(0, n.col+'0.25)');
-    g.addColorStop(1, n.col+'0)');
-    ctx.beginPath(); ctx.arc(px,py,r*3.5,0,Math.PI*2);
-    ctx.fillStyle = g; ctx.fill();
-    ctx.beginPath(); ctx.arc(px,py,r,0,Math.PI*2);
-    ctx.fillStyle = n.col+`${0.55+Math.sin(n.pulse)*0.25})`; ctx.fill();
-  });
+  // Force tick
+  tickForce();
 
-  // Signals
-  for (let i = signals.length-1; i >= 0; i--) {
-    const s = signals[i];
-    s.progress += s.speed;
-    if (s.progress >= 1) { signals.splice(i,1); continue; }
-
-    const fromX = s.isKG ? s.fromX : s.fromX;
-    const fromY = s.isKG ? s.fromY : s.fromY;
-    const toX = s.isKG ? s.toX : s.toX;
-    const toY = s.isKG ? s.toY : s.toY;
-
-    const sx = fromX + (toX-fromX)*s.progress;
-    const sy = fromY + (toY-fromY)*s.progress;
-    const trail = 0.1;
-    const tx = fromX + (toX-fromX)*Math.max(0, s.progress-trail);
-    const ty = fromY + (toY-fromY)*Math.max(0, s.progress-trail);
-
-    const col = s.isKG ? s.col : s.col+'1)';
-    const grad = ctx.createLinearGradient(tx,ty,sx,sy);
-    grad.addColorStop(0, (s.isKG ? s.col : s.col)+'00'.padEnd(2,'0'));
-    grad.addColorStop(1, s.isKG ? s.col+'ee' : s.col+'0.8)');
-    ctx.beginPath();
-    ctx.moveTo(tx,ty); ctx.lineTo(sx,sy);
-    ctx.strokeStyle = grad;
-    ctx.lineWidth = s.isKG ? 2 : 1.2;
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(sx,sy, s.isKG ? 3.5 : 2, 0, Math.PI*2);
-    ctx.fillStyle = s.isKG ? s.col+'ff' : s.col+'0.9)';
-    ctx.fill();
+  // KG links
+  for (const [sid,tid] of KG_LINKS) {
+    const s=nodeMap[sid],t2=nodeMap[tid]; if(!s||!t2) continue;
+    ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(t2.x,t2.y);
+    ctx.strokeStyle='rgba(45,45,78,0.75)'; ctx.lineWidth=1.2; ctx.stroke();
   }
 
-  // Divider line between left text and right KG
-  ctx.beginPath();
-  ctx.moveTo(W*0.47, H*0.1);
-  ctx.lineTo(W*0.47, H*0.9);
-  ctx.strokeStyle = 'rgba(45,45,78,0.5)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([4,8]);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  // Signals on KG links
+  for(let i=signals.length-1;i>=0;i--){
+    const sig=signals[i]; sig.progress+=sig.speed;
+    if(sig.progress>=1){signals.splice(i,1);continue;}
+    const sx=sig.s.x+(sig.t2.x-sig.s.x)*sig.progress;
+    const sy=sig.s.y+(sig.t2.y-sig.s.y)*sig.progress;
+    const trail=0.1;
+    const tx=sig.s.x+(sig.t2.x-sig.s.x)*Math.max(0,sig.progress-trail);
+    const ty=sig.s.y+(sig.t2.y-sig.s.y)*Math.max(0,sig.progress-trail);
+    const grad=ctx.createLinearGradient(tx,ty,sx,sy);
+    grad.addColorStop(0,sig.s.color+'00'); grad.addColorStop(1,sig.s.color+'ee');
+    ctx.beginPath(); ctx.moveTo(tx,ty); ctx.lineTo(sx,sy);
+    ctx.strokeStyle=grad; ctx.lineWidth=2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(sx,sy,3,0,Math.PI*2);
+    ctx.fillStyle=sig.s.color; ctx.fill();
+  }
 
-  // KG on right
-  drawKG();
+  // Divider
+  ctx.beginPath(); ctx.moveTo(W*0.47,H*0.08); ctx.lineTo(W*0.47,H*0.92);
+  ctx.strokeStyle='rgba(45,45,78,0.4)'; ctx.lineWidth=1;
+  ctx.setLineDash([4,10]); ctx.stroke(); ctx.setLineDash([]);
 
-  // Comet on top of everything
+  // Planets (KG nodes)
+  KG_NODES.forEach(n => drawPlanet(n));
+
+  // Comet on top
   drawComet();
 
   requestAnimationFrame(animate);
@@ -395,7 +396,6 @@ requestAnimationFrame(animate);
   height: 100%;
 }
 
-/* Left text overlay */
 .scene-left {
   position: absolute;
   z-index: 10;
@@ -466,14 +466,12 @@ requestAnimationFrame(animate);
 
 .graph-hint {
   font-size: 0.72rem;
-  color: rgba(167,139,250,0.55);
+  color: rgba(167,139,250,0.5);
   letter-spacing: 0.06em;
   animation: hint-fade 2.5s ease-in-out infinite;
   margin: 0;
 }
-@keyframes hint-fade {
-  0%, 100% { opacity: 0.3; } 50% { opacity: 0.9; }
-}
+@keyframes hint-fade { 0%,100%{opacity:.3} 50%{opacity:.9} }
 
 @media (max-width: 700px) {
   .scene-left { left: 1.5rem; right: 1.5rem; max-width: 100%; transform: translateY(-65%); }
