@@ -75,13 +75,70 @@ td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--border); }
 }
 
 blockquote {
-  border-left: 3px solid var(--accent);
-  margin: 1.5rem 0;
-  padding: 0.8rem 1.5rem;
-  background: rgba(124, 58, 237, 0.08);
-  border-radius: 0 8px 8px 0;
-  color: var(--text-muted);
-  font-style: italic;
+  position: relative;
+  margin: 2rem 0 2rem 3.5rem;
+  padding: 1.2rem 1.5rem 1.2rem 1.8rem;
+  background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(6,182,212,0.08));
+  border: 1px solid rgba(124,58,237,0.35);
+  border-radius: 12px;
+  color: var(--text);
+  font-style: normal;
+  box-shadow: 0 0 20px rgba(124,58,237,0.1);
+}
+
+/* Mascot avatar */
+blockquote::before {
+  content: '';
+  position: absolute;
+  left: -3.2rem;
+  top: 0.8rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  background:
+    radial-gradient(circle at 35% 35%, #a78bfa, #7c3aed);
+  border-radius: 50%;
+  border: 2px solid rgba(167,139,250,0.6);
+  box-shadow: 0 0 12px rgba(124,58,237,0.5);
+}
+
+/* DNA face on mascot */
+blockquote::after {
+  content: '🧬';
+  position: absolute;
+  left: -3.05rem;
+  top: 0.9rem;
+  font-size: 1.3rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 4px rgba(124,58,237,0.8));
+}
+
+/* Speech bubble tail */
+blockquote p:first-child::before {
+  content: '⚡ TL;DR  ';
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--accent-2);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.6rem;
+}
+
+blockquote p,
+blockquote li {
+  color: var(--text);
+  margin: 0.3rem 0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+blockquote ul {
+  padding-left: 1.2rem;
+  margin: 0.4rem 0 0;
+}
+
+blockquote strong {
+  color: var(--accent-2);
 }
 
 code {

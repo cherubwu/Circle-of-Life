@@ -8,6 +8,12 @@ tags: ['BCI', 'Neuroscience', 'China Policy', 'Industry Analysis', 'Medical Devi
 author: 'Cherainboow'
 ---
 
+> - **Synchron** wins on safety: no craniotomy, FDA Breakthrough Device, closest to commercialization
+> - **Precision Neuroscience** has the best signal density: 1,024 channels on a 10-micron film
+> - **China** already has clinical billing codes for BCI — ¥966/session non-invasive, ¥6,600 for implants
+> - BCI 3.0 = bidirectional closed-loop: the brain both sends *and* receives signals
+> - Biggest risk: upstream chip supply chain + ethics/privacy legislation lagging behind the tech
+
 ## I. Why Neuralink Is Not the Whole Story
 
 In early 2024, Neuralink completed its first human implantation. A video of patient Noland Arbaugh controlling a computer cursor with his thoughts went viral. Elon Musk's brand power brought "brain-computer interface" into mainstream conversation overnight.
