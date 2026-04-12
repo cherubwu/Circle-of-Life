@@ -208,7 +208,7 @@ const BG_SHAPES = Array.from({ length: 28 }, () => ({
   rotV: (Math.random()-0.5) * 0.004,
   type: SHAPE_TYPES[Math.floor(Math.random()*SHAPE_TYPES.length)],
   col: SHAPE_COLS[Math.floor(Math.random()*SHAPE_COLS.length)],
-  alpha: 0.04 + Math.random() * 0.07,
+  alpha: 0.06 + Math.random() * 0.1,
   hollow: Math.random() > 0.4,
 }));
 
@@ -253,7 +253,7 @@ function drawPlanet(n) {
   const scale = isDrag ? 1.1 : (isHov ? 1.07 : 1);
   const r = n.r * scale;
   const cx = n.x, cy = n.y + bob;
-  const INK = '#1a1a2e';
+  const INK = '#1a2e22';
 
   if (n.type === 'root') {
     /* ── Atomic orbital root node ── */
@@ -365,7 +365,7 @@ function animate() {
   ctx.clearRect(0, 0, W, H);
 
   // BG — warm dark (not cool purple-black)
-  ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = '#f5f0e8'; ctx.fillRect(0,0,W,H);
 
   // Floating Bauhaus / Surrealist geometric shapes
   BG_SHAPES.forEach(s => {
@@ -424,7 +424,7 @@ function animate() {
 
   // Divider — warm ink tone
   ctx.beginPath(); ctx.moveTo(W*0.47,H*0.1); ctx.lineTo(W*0.47,H*0.9);
-  ctx.strokeStyle='rgba(212,83,26,0.2)'; ctx.lineWidth=1;
+  ctx.strokeStyle='rgba(110,207,160,0.3)'; ctx.lineWidth=1;
   ctx.setLineDash([3,12]); ctx.stroke(); ctx.setLineDash([]);
 
   // Planets (KG nodes)
@@ -493,7 +493,7 @@ requestAnimationFrame(animate);
   font-size: clamp(4rem, 6.5vw, 7rem);
   line-height: 0.88;
   margin: 0 0 0.5rem;
-  color: #F5EED8;
+  color: #1a2e22;
   font-weight: 400;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -512,8 +512,8 @@ requestAnimationFrame(animate);
 
 .tagline {
   font-family: 'DM Sans', sans-serif;
-  color: rgba(235,225,195,0.65);
-  font-size: 0.82rem;
+  color: #4a6a5a;
+  font-size: 0.85rem;
   line-height: 1.8;
   margin: 0 0 1.8rem;
   white-space: pre-line;
@@ -560,11 +560,11 @@ requestAnimationFrame(animate);
   position: absolute;
   width: 320px; height: 320px;
   border-radius: 50%;
-  background: #6ecfa0;
-  opacity: 0.07;
-  top: 50%; left: 30%;
+  background: #e07bb0;
+  opacity: 0.12;
+  top: 48%; left: 68%;
   transform: translate(-50%, -50%);
-  mix-blend-mode: screen;
+  mix-blend-mode: multiply;
   pointer-events: none;
   z-index: 1;
 }
@@ -572,12 +572,12 @@ requestAnimationFrame(animate);
 /* Morphing organic blob (Surrealist) */
 .morph-blob {
   position: absolute;
-  width: 380px; height: 380px;
-  top: 50%; left: 72%;
+  width: 400px; height: 400px;
+  top: 52%; left: 75%;
   transform: translate(-50%, -50%);
-  background: #3a5a4a;
-  opacity: 0.09;
-  mix-blend-mode: screen;
+  background: #5bbad5;
+  opacity: 0.1;
+  mix-blend-mode: multiply;
   pointer-events: none;
   z-index: 1;
   animation: blob-morph 12s ease-in-out infinite;
