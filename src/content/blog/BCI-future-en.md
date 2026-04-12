@@ -1,6 +1,6 @@
 ---
 title: 'Brain-Computer Interfaces 2025: Who Else Deserves Attention Beyond Neuralink?'
-description: 'While Neuralink captures global headlines, China has quietly entered the commercial and clinical reimbursement stage of BCI. A full breakdown of international frontrunners, China's policy landscape, and the industry chain.'
+description: "While Neuralink captures global headlines, China has quietly entered the commercial and clinical reimbursement stage of BCI. A full breakdown of international frontrunners, China's policy landscape, and the industry chain."
 pubDate: '2026-04-19'
 lang: 'en'
 pairSlug: 'bci-2025'
