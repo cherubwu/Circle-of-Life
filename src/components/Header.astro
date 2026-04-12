@@ -9,10 +9,7 @@ const aboutPath = lang === 'zh' ? '/Circle-of-Life/zh/about' : '/Circle-of-Life/
 ---
 <header>
   <nav>
-    <a href="/Circle-of-Life/" class="logo">
-      <span class="logo-icon">🔬</span>
-      <span class="logo-text">{title}</span>
-    </a>
+    <a href="/Circle-of-Life/" class="logo">{title}</a>
     <div class="nav-links">
       <a href={blogPath}>{nav.blog}</a>
       <a href={aboutPath}>{nav.about}</a>
@@ -27,14 +24,59 @@ const aboutPath = lang === 'zh' ? '/Circle-of-Life/zh/about' : '/Circle-of-Life/
 </header>
 
 <style>
-header { border-bottom: 1px solid var(--border); padding: 1rem 2rem; background: rgba(15,15,26,0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
-nav { max-width: 800px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-.logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.05rem; color: var(--text); text-decoration: none; }
-.logo:hover { color: var(--accent-2); }
-.nav-links { display: flex; align-items: center; gap: 1.5rem; }
-.nav-links a { color: var(--text-muted); font-size: 0.9rem; }
-.nav-links a:hover { color: var(--accent-2); }
-.lang-toggle { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; border-left: 1px solid var(--border); padding-left: 1rem; }
-.lang-toggle a { color: var(--text-muted); }
-.lang-toggle a.active { color: var(--accent-2); font-weight: 700; pointer-events: none; }
+header {
+  border-bottom: 1px solid #6ecfa0;
+  padding: 0.9rem 2rem;
+  background: rgba(26,26,46,0.97);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+nav {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.logo {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #f5f0e8;
+  text-decoration: none;
+}
+.logo:hover { color: #6ecfa0; }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.8rem;
+}
+.nav-links a {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #a8c4b4;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.nav-links a:hover { color: #6ecfa0; }
+
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.68rem;
+  border-left: 1px solid #2e2c4a;
+  padding-left: 1.2rem;
+}
+.lang-toggle span { color: #2e2c4a; }
+.lang-toggle a { color: #a8c4b4; }
+.lang-toggle a.active { color: #6ecfa0; font-weight: 700; pointer-events: none; }
 </style>

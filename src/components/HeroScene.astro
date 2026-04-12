@@ -4,6 +4,11 @@ const base = '/Circle-of-Life';
 ---
 
 <section class="hero-scene" id="hero-scene">
+  <!-- Surrealist ghost circle — large semi-transparent form in the BG -->
+  <div class="ghost-circle" aria-hidden="true"></div>
+  <!-- Morphing organic blob -->
+  <div class="morph-blob" aria-hidden="true"></div>
+
   <canvas id="neural-canvas"></canvas>
 
   <div class="scene-left">
@@ -188,11 +193,11 @@ canvas.addEventListener('mousemove', () => {
 
 /* ── Background geometric shapes (Bauhaus / Surrealist floating forms) ── */
 const SHAPE_COLS = [
-  'rgba(212,83,26,',   // terracotta
-  'rgba(43,92,138,',   // mid-century blue
-  'rgba(232,160,32,',  // mustard
-  'rgba(74,124,89,',   // sage green
-  'rgba(245,238,216,', // cream
+  'rgba(110,207,160,', // sage
+  'rgba(91,186,213,',  // teal
+  'rgba(156,136,212,', // lavender
+  'rgba(224,123,176,', // rose
+  'rgba(232,160,80,',  // amber
 ];
 const SHAPE_TYPES = ['circle', 'triangle', 'rect', 'circle', 'circle'];
 const BG_SHAPES = Array.from({ length: 28 }, () => ({
@@ -248,7 +253,7 @@ function drawPlanet(n) {
   const scale = isDrag ? 1.1 : (isHov ? 1.07 : 1);
   const r = n.r * scale;
   const cx = n.x, cy = n.y + bob;
-  const INK = '#0f0b08';
+  const INK = '#1a1a2e';
 
   if (n.type === 'root') {
     /* ── Atomic orbital root node ── */
@@ -343,15 +348,15 @@ function drawComet() {
     const ratio = 1 - i/cometTrail.length;
     const a = cometTrail[i-1], b = cometTrail[i];
     ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
-    ctx.strokeStyle = `rgba(212,83,26,${ratio*0.6})`;
+    ctx.strokeStyle = `rgba(110,207,160,${ratio*0.6})`;
     ctx.lineWidth = ratio*3; ctx.lineCap = 'round'; ctx.stroke();
   }
   // Flat head — no gradient, Bauhaus solid dot
   ctx.beginPath(); ctx.arc(mouse.x,mouse.y,7,0,Math.PI*2);
-  ctx.fillStyle = '#D4531A'; ctx.fill();
-  ctx.strokeStyle = '#0f0b08'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#6ecfa0'; ctx.fill();
+  ctx.strokeStyle = '#1a1a2e'; ctx.lineWidth = 2; ctx.stroke();
   ctx.beginPath(); ctx.arc(mouse.x,mouse.y,2.5,0,Math.PI*2);
-  ctx.fillStyle = '#F5EED8'; ctx.fill();
+  ctx.fillStyle = '#f5f0e8'; ctx.fill();
 }
 
 /* ── Main loop ── */
@@ -360,7 +365,7 @@ function animate() {
   ctx.clearRect(0, 0, W, H);
 
   // BG — warm dark (not cool purple-black)
-  ctx.fillStyle = '#0f0b08'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0,0,W,H);
 
   // Floating Bauhaus / Surrealist geometric shapes
   BG_SHAPES.forEach(s => {
@@ -436,7 +441,7 @@ requestAnimationFrame(animate);
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&display=swap');
 
 .hero-scene {
   position: relative;
@@ -473,8 +478,8 @@ requestAnimationFrame(animate);
   font-size: 0.6rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #E8A020;
-  border: 1.5px solid #E8A020;
+  color: #6ecfa0;
+  border: 1.5px solid #6ecfa0;
   padding: 0.28rem 0.8rem;
   border-radius: 0;
   margin-bottom: 1.2rem;
@@ -500,7 +505,7 @@ requestAnimationFrame(animate);
   display: block;
   width: 3.5rem;
   height: 4px;
-  background: #D4531A;
+  background: #e8a050;
   margin-top: 0.7rem;
   margin-bottom: 0.9rem;
 }
@@ -518,8 +523,8 @@ requestAnimationFrame(animate);
 /* Bauhaus: flat rect button */
 .hero-cta {
   display: inline-block;
-  background: #D4531A;
-  color: #F5EED8;
+  background: #6ecfa0;
+  color: #1a1a2e;
   padding: 0.7rem 1.8rem;
   border-radius: 0;
   font-family: 'Bebas Neue', sans-serif;
@@ -530,11 +535,11 @@ requestAnimationFrame(animate);
   margin-bottom: 1.5rem;
   pointer-events: all;
   transition: background 0.18s, color 0.18s;
-  border: 2px solid #D4531A;
+  border: 2px solid #6ecfa0;
 }
 .hero-cta:hover {
   background: transparent;
-  color: #D4531A;
+  color: #6ecfa0;
   text-decoration: none;
   cursor: pointer;
 }
@@ -542,13 +547,49 @@ requestAnimationFrame(animate);
 .graph-hint {
   font-family: 'DM Sans', sans-serif;
   font-size: 0.68rem;
-  color: rgba(212,83,26,0.5);
+  color: rgba(110,207,160,0.5);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   animation: hint-fade 2.5s ease-in-out infinite;
   margin: 0;
 }
 @keyframes hint-fade { 0%,100%{opacity:.25} 50%{opacity:.85} }
+
+/* Ghost circle — large Surrealist form behind everything */
+.ghost-circle {
+  position: absolute;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  background: #6ecfa0;
+  opacity: 0.07;
+  top: 50%; left: 30%;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Morphing organic blob (Surrealist) */
+.morph-blob {
+  position: absolute;
+  width: 380px; height: 380px;
+  top: 50%; left: 72%;
+  transform: translate(-50%, -50%);
+  background: #3a5a4a;
+  opacity: 0.09;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 1;
+  animation: blob-morph 12s ease-in-out infinite;
+}
+
+@keyframes blob-morph {
+  0%   { border-radius: 60% 40% 70% 30% / 50% 60% 40% 70%; }
+  25%  { border-radius: 40% 60% 30% 70% / 70% 30% 60% 50%; }
+  50%  { border-radius: 55% 45% 65% 35% / 45% 65% 35% 55%; }
+  75%  { border-radius: 35% 65% 45% 55% / 60% 40% 70% 30%; }
+  100% { border-radius: 60% 40% 70% 30% / 50% 60% 40% 70%; }
+}
 
 @media (max-width: 700px) {
   .scene-left { left: 1.5rem; right: 1.5rem; max-width: 100%; transform: translateY(-65%); }
