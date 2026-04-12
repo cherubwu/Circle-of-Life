@@ -1,372 +1,201 @@
 ---
+import KnowledgeGraph from './KnowledgeGraph.astro';
 const lang = Astro.currentLocale ?? 'en';
 ---
 
 <section class="hero-scene" id="hero-scene">
-  <!-- Original Liévano GIF as background -->
-  <img src="/Circle-of-Life/hero-bg.gif" class="hero-bg" alt="" aria-hidden="true" />
-  <div class="hero-bg-overlay"></div>
+  <!-- Neural network animated background -->
+  <canvas id="neural-canvas"></canvas>
 
-  <!-- Interactive canvas for frames -->
-  <canvas id="scene-canvas"></canvas>
-
-  <div class="scene-overlay">
-    <div class="hero-text">
+  <div class="scene-layout">
+    <!-- Left: text -->
+    <div class="scene-left">
       <span class="badge">Biotech · Neuroscience · 2025</span>
       <h1>{lang === 'zh' ? <>生之<br/>回环</> : <>Circle<br/>of Life</>}</h1>
-      <p>{lang === 'zh'
+      <p class="tagline">{lang === 'zh'
         ? '研究者视角的生命科学洞见\n聚焦创新药与神经科学前沿'
-        : 'Biotech insights from inside the lab\nInnovative drugs · Neuroscience · Metabolism'}</p>
+        : 'Biotech insights from inside the lab.\nInnovative drugs · Neuroscience · Metabolism.'}</p>
       <a href="https://your-substack.substack.com" target="_blank" class="hero-cta">
         {lang === 'zh' ? '订阅周刊 →' : 'Subscribe →'}
       </a>
+      <div class="stats">
+        <div class="stat"><span class="stat-n">7+</span><span class="stat-l">{lang === 'zh' ? '研究领域' : 'Research Areas'}</span></div>
+        <div class="stat"><span class="stat-n">Weekly</span><span class="stat-l">{lang === 'zh' ? '内容更新' : 'Updates'}</span></div>
+        <div class="stat"><span class="stat-n">2025</span><span class="stat-l">{lang === 'zh' ? '最新前沿' : 'Cutting Edge'}</span></div>
+      </div>
     </div>
-    <p class="click-hint">{lang === 'zh' ? '↑ 点击框架探索分子世界' : '↑ Click frames to explore'}</p>
-  </div>
 
-  <!-- Info modal -->
-  <div class="kg-modal" id="kg-modal">
-    <div class="kg-modal-panel">
-      <button class="kg-close" id="kg-close">✕</button>
-      <div id="kg-content"></div>
+    <!-- Right: knowledge graph -->
+    <div class="scene-right">
+      <div class="graph-panel">
+        <KnowledgeGraph />
+      </div>
     </div>
   </div>
 </section>
 
-<script define:vars={{ lang }}>
-const canvas = document.getElementById('scene-canvas');
-const ctx = canvas.getContext('2d');
+<script>
+const canvas = document.getElementById('neural-canvas') as HTMLCanvasElement;
+const ctx = canvas.getContext('2d')!;
 let W = 0, H = 0;
-let t = 0;
 const mouse = { x: -9999, y: -9999 };
+let t = 0;
 
 function resize() {
   W = canvas.width = canvas.offsetWidth;
   H = canvas.height = canvas.offsetHeight;
-  initFrames();
 }
-
-/* ── Organ / molecule data ── */
-const ORGANS = [
-  {
-    shape: 'square',
-    label: lang === 'zh' ? '肝脏' : 'Liver',
-    img: 'bio-research',   // dark cell interior — fits liver cell visualization
-    color: '#c2855a',
-    molecules: ['Glucose', 'Bile Acids', 'ALT/AST', 'MASH', 'Fatty Acids'],
-    desc: lang === 'zh' ? '糖代谢 · 胆汁合成 · MASH/MASLD' : 'Glucose metabolism · Bile synthesis · MASH',
-  },
-  {
-    shape: 'circle',
-    label: lang === 'zh' ? '大脑' : 'Brain',
-    img: 'bio-research',   // giant cell with molecular orbit — fits neuroscience
-    color: '#7c6fa0',
-    molecules: ['Dopamine', 'Serotonin', 'BDNF', 'Tau', 'BCI'],
-    desc: lang === 'zh' ? '多巴胺 · 血清素 · 脑机接口' : 'Dopamine · Serotonin · BCI',
-  },
-  {
-    shape: 'square',
-    label: lang === 'zh' ? '细胞膜' : 'Cell Membrane',
-    img: 'bio-membrane',   // phospholipid bilayer 3D render
-    color: '#c08080',
-    molecules: ['Phospholipid', 'Channel Protein', 'Receptor', 'Lipid Raft'],
-    desc: lang === 'zh' ? '磷脂双层 · 受体 · 离子通道' : 'Phospholipid bilayer · Receptors · Ion channels',
-  },
-  {
-    shape: 'circle',
-    label: lang === 'zh' ? '细胞' : 'Cell',
-    img: 'bio-cell',       // Iris Joval flat cell diagram
-    color: '#5a9a6a',
-    molecules: ['Mitochondria', 'Nucleus', 'ER', 'Ribosome', 'Golgi'],
-    desc: lang === 'zh' ? '线粒体 · 细胞核 · 内质网' : 'Mitochondria · Nucleus · Endoplasmic Reticulum',
-  },
-  {
-    shape: 'square',
-    label: lang === 'zh' ? '胰腺' : 'Pancreas',
-    img: 'bio-pill',       // pill/molecular collage
-    color: '#5a8ac2',
-    molecules: ['Insulin', 'Glucagon', 'GLP-1', 'β-cell', 'Amylase'],
-    desc: lang === 'zh' ? '胰岛素 · GLP-1 · 胰岛β细胞' : 'Insulin · GLP-1 · Pancreatic β-cells',
-  },
-  {
-    shape: 'circle',
-    label: lang === 'zh' ? '生命' : 'Life',
-    img: 'bio-nature',     // person in landscape — nature/human
-    color: '#6a9a5a',
-    molecules: ['mTOR', 'Senolytics', 'NAD+', 'Telomere', 'Longevity'],
-    desc: lang === 'zh' ? '长寿 · mTOR · 衰老生物学' : 'Longevity · mTOR · Senescence biology',
-  },
-  {
-    shape: 'square',
-    label: lang === 'zh' ? '脂肪' : 'Adipose',
-    img: 'bio-membrane',   // reuse membrane (lipid texture)
-    color: '#d4a843',
-    molecules: ['Triglyceride', 'Leptin', 'Adiponectin', 'GLP-1', 'Lipase'],
-    desc: lang === 'zh' ? '甘油三酯 · 瘦素 · GLP-1' : 'Triglyceride · Leptin · GLP-1',
-  },
-];
-
-/* ── Preload images ── */
-const IMGS = {};
-const IMG_KEYS = ['bio-membrane','bio-cell','bio-research','bio-pill','bio-nature'];
-let imgsLoaded = 0;
-IMG_KEYS.forEach(key => {
-  const img = new Image();
-  img.src = `/Circle-of-Life/${key}.${key === 'bio-nature' ? 'png' : 'jpg'}`;
-  img.onload = () => { imgsLoaded++; };
-  IMGS[key] = img;
-});
-
-/* ── Frame layout ── */
-let frames = [];
-
-function initFrames() {
-  // Mirror the original GIF composition roughly:
-  // GIF has frames scattered from top-left to bottom-right
-  const cx = W * 0.5, cy = H * 0.48;
-  const rx = Math.min(W, H) * 0.33;
-  const ry = Math.min(W, H) * 0.38;
-
-  const positions = [
-    { x: cx - rx * 0.5,  y: cy - ry * 0.88 },  // top-center (butterfly → liver)
-    { x: cx + rx * 0.62, y: cy - ry * 0.65 },  // top-right (hand → brain)
-    { x: cx - rx * 0.85, y: cy - ry * 0.1  },  // mid-left (lizard → membrane)
-    { x: cx + rx * 0.78, y: cy + ry * 0.1  },  // mid-right (cell diagram)
-    { x: cx - rx * 0.45, y: cy + ry * 0.75 },  // bottom-left (seal → pancreas)
-    { x: cx + rx * 0.38, y: cy + ry * 0.8  },  // bottom-right (bird → life)
-    { x: cx + rx * 0.05, y: cy - ry * 0.02 },  // center (floating → fat)
-  ];
-
-  frames = ORGANS.map((org, i) => ({
-    ...org,
-    x: positions[i].x,
-    y: positions[i].y,
-    baseX: positions[i].x,
-    baseY: positions[i].y,
-    floatPhase: Math.random() * Math.PI * 2,
-    floatSpeed: 0.35 + Math.random() * 0.25,
-    size: org.shape === 'square' ? 72 : 64,
-    hover: false,
-    state: 'organ',  // 'organ' | 'molecule'
-  }));
-}
-
-window.addEventListener('resize', resize);
 resize();
-
-/* ── Interactions ── */
-function hitFrame(px, py) {
-  for (const f of frames) {
-    const dx = px - f.x, dy = py - f.y;
-    const hw = f.size / 2;
-    const hit = f.shape === 'square'
-      ? Math.abs(dx) < hw + 6 && Math.abs(dy) < hw + 6
-      : dx * dx + dy * dy < (hw + 6) ** 2;
-    if (hit) return f;
-  }
-  return null;
-}
-
-canvas.addEventListener('mousemove', e => {
+window.addEventListener('resize', resize);
+window.addEventListener('mousemove', e => {
   const r = canvas.getBoundingClientRect();
   mouse.x = e.clientX - r.left;
   mouse.y = e.clientY - r.top;
-  const hit = hitFrame(mouse.x, mouse.y);
-  frames.forEach(f => f.hover = f === hit);
-  canvas.style.cursor = hit ? 'pointer' : 'default';
 });
 
-canvas.addEventListener('click', e => {
-  const r = canvas.getBoundingClientRect();
-  const hit = hitFrame(e.clientX - r.left, e.clientY - r.top);
-  if (!hit) return;
-  hit.state = hit.state === 'organ' ? 'molecule' : 'organ';
-  showModal(hit);
-});
+/* ── Neural nodes ── */
+const NODE_COUNT = 60;
+type Node = { x: number; y: number; vx: number; vy: number; r: number; pulse: number; pulseSpeed: number; col: string };
+const COLS = ['rgba(167,139,250,', 'rgba(6,182,212,', 'rgba(16,185,129,', 'rgba(245,158,11,'];
 
-document.getElementById('kg-close')?.addEventListener('click', () => {
-  document.getElementById('kg-modal').classList.remove('open');
-});
-document.getElementById('kg-modal')?.addEventListener('click', e => {
-  if (e.target.id === 'kg-modal') document.getElementById('kg-modal').classList.remove('open');
-});
+const nodes: Node[] = Array.from({ length: NODE_COUNT }, () => ({
+  x: Math.random() * 1,
+  y: Math.random() * 1,
+  vx: (Math.random() - 0.5) * 0.00015,
+  vy: (Math.random() - 0.5) * 0.00015,
+  r: Math.random() * 2.5 + 1,
+  pulse: Math.random() * Math.PI * 2,
+  pulseSpeed: 0.02 + Math.random() * 0.03,
+  col: COLS[Math.floor(Math.random() * COLS.length)],
+}));
 
-function showModal(frame) {
-  const content = document.getElementById('kg-content');
-  content.innerHTML = `
-    <h2 style="color:#a78bfa;margin:0 0 0.7rem;font-size:1.25rem">${frame.label}</h2>
-    <p style="color:#94a3b8;font-size:0.83rem;margin:0 0 1.2rem;line-height:1.6">${frame.desc}</p>
-    <div style="display:flex;flex-wrap:wrap;gap:0.45rem">
-      ${frame.molecules.map(m => `<span style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.4);color:#a78bfa;padding:0.28rem 0.85rem;border-radius:999px;font-size:0.8rem;font-family:monospace">${m}</span>`).join('')}
-    </div>
-  `;
-  document.getElementById('kg-modal').classList.add('open');
+/* ── Signal packets traveling along edges ── */
+type Signal = { from: number; to: number; progress: number; speed: number; col: string };
+const signals: Signal[] = [];
+function spawnSignal() {
+  const from = Math.floor(Math.random() * NODE_COUNT);
+  const to = Math.floor(Math.random() * NODE_COUNT);
+  if (from === to) return;
+  signals.push({ from, to, progress: 0, speed: 0.004 + Math.random() * 0.006, col: COLS[Math.floor(Math.random() * COLS.length)] });
 }
+setInterval(spawnSignal, 400);
 
-/* ── Draw frame ── */
-function drawFrame(f, time) {
-  f.y = f.baseY + Math.sin(time * f.floatSpeed + f.floatPhase) * 6;
-
-  const hw = f.size / 2;
-  ctx.save();
-  ctx.translate(f.x, f.y);
-
-  // Clip to shape
-  ctx.beginPath();
-  if (f.shape === 'square') {
-    ctx.rect(-hw, -hw, f.size, f.size);
-  } else {
-    ctx.arc(0, 0, hw, 0, Math.PI * 2);
-  }
-  ctx.save();
-  ctx.clip();
-
-  // Draw bio image if loaded
-  const imgEl = IMGS[f.img];
-  if (imgEl && imgEl.complete && imgEl.naturalWidth > 0) {
-    // Fit image to frame (cover)
-    const iw = imgEl.naturalWidth, ih = imgEl.naturalHeight;
-    const scale = Math.max(f.size / iw, f.size / ih);
-    const sw = iw * scale, sh = ih * scale;
-    ctx.drawImage(imgEl, -sw / 2, -sh / 2, sw, sh);
-  } else {
-    // Fallback solid
-    ctx.fillStyle = f.color + '33';
-    if (f.shape === 'square') ctx.fillRect(-hw, -hw, f.size, f.size);
-    else { ctx.beginPath(); ctx.arc(0, 0, hw, 0, Math.PI * 2); ctx.fill(); }
-  }
-
-  // Molecule state overlay
-  if (f.state === 'molecule') {
-    ctx.fillStyle = 'rgba(10,5,30,0.72)';
-    if (f.shape === 'square') ctx.fillRect(-hw, -hw, f.size, f.size);
-    else { ctx.beginPath(); ctx.arc(0, 0, hw, 0, Math.PI * 2); ctx.fill(); }
-
-    // Draw molecule tags
-    const mols = f.molecules.slice(0, 4);
-    ctx.font = `bold ${Math.max(7, f.size * 0.13)}px monospace`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    mols.forEach((m, i) => {
-      const angle = (i / mols.length) * Math.PI * 2 - Math.PI / 2;
-      const r2 = f.size * 0.28;
-      const mx = Math.cos(angle) * r2;
-      const my = Math.sin(angle) * r2;
-      // Bond line from center
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(mx * 0.6, my * 0.6);
-      ctx.strokeStyle = 'rgba(167,139,250,0.4)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      // Atom circle
-      ctx.beginPath();
-      ctx.arc(mx, my, f.size * 0.1, 0, Math.PI * 2);
-      ctx.fillStyle = ['#a78bfa','#06b6d4','#34d399','#fbbf24'][i % 4];
-      ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.9)';
-      ctx.fillText(m.length > 6 ? m.slice(0,5)+'…' : m, mx, my + f.size * 0.16);
-    });
-  }
-
-  ctx.restore(); // unclip
-
-  // Frame border
-  ctx.beginPath();
-  if (f.shape === 'square') {
-    ctx.rect(-hw, -hw, f.size, f.size);
-  } else {
-    ctx.arc(0, 0, hw, 0, Math.PI * 2);
-  }
-  ctx.strokeStyle = f.hover
-    ? 'rgba(167,139,250,0.95)'
-    : (f.shape === 'square' ? 'rgba(240,230,210,0.75)' : 'rgba(220,205,170,0.7)');
-  ctx.lineWidth = f.hover ? 2.5 : 1.5;
-  ctx.stroke();
-
-  // Hover glow
-  if (f.hover) {
-    ctx.globalAlpha = 0.18;
-    ctx.beginPath();
-    if (f.shape === 'square') ctx.rect(-hw - 8, -hw - 8, f.size + 16, f.size + 16);
-    else ctx.arc(0, 0, hw + 10, 0, Math.PI * 2);
-    ctx.fillStyle = '#a78bfa';
-    ctx.fill();
-    ctx.globalAlpha = 1;
-  }
-
-  // Label below frame
-  ctx.fillStyle = f.shape === 'square'
-    ? 'rgba(240,225,200,0.9)'
-    : 'rgba(240,225,200,0.9)';
-  ctx.font = `600 ${Math.max(9, f.size * 0.16)}px sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  ctx.shadowColor = 'rgba(0,0,0,0.8)';
-  ctx.shadowBlur = 6;
-  ctx.fillText(f.label, 0, hw + 5);
-  ctx.shadowBlur = 0;
-
-  ctx.restore();
-}
-
-/* ── Draw thin connecting lines + red sphere (mirror GIF layout) ── */
-function drawConnections(time) {
-  const cx = W * 0.5, cy = H * 0.46;
-
-  frames.forEach((f, i) => {
-    ctx.save();
-    ctx.beginPath();
-    const cp1x = cx + (f.x - cx) * 0.4 + Math.sin(time * 0.5 + i) * 20;
-    const cp1y = cy + (f.y - cy) * 0.4 + Math.cos(time * 0.4 + i) * 15;
-    ctx.moveTo(cx, cy);
-    ctx.quadraticCurveTo(cp1x, cp1y, f.x, f.y);
-    ctx.strokeStyle = `rgba(190,50,50,${0.2 + Math.sin(time + i) * 0.05})`;
-    ctx.lineWidth = 0.8;
-    ctx.setLineDash([5, 10]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Traveling dot
-    const dotT = ((time * 0.35 + i * 0.18) % 1 + 1) % 1;
-    const dotX = (1-dotT)*(1-dotT)*cx + 2*(1-dotT)*dotT*cp1x + dotT*dotT*f.x;
-    const dotY = (1-dotT)*(1-dotT)*cy + 2*(1-dotT)*dotT*cp1y + dotT*dotT*f.y;
-    ctx.beginPath();
-    ctx.arc(dotX, dotY, 2, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(220,70,70,0.7)`;
-    ctx.fill();
-    ctx.restore();
-  });
-
-  // Central red sphere
-  const pulse = 1 + Math.sin(time * 1.3) * 0.07;
-  const sr = 14 * pulse;
-  const grd = ctx.createRadialGradient(cx - 4, cy - 4, 1, cx, cy, sr);
-  grd.addColorStop(0, '#ff8080');
-  grd.addColorStop(0.5, '#cc2222');
-  grd.addColorStop(1, '#7a0000');
-  ctx.beginPath();
-  ctx.arc(cx, cy, sr, 0, Math.PI * 2);
-  ctx.fillStyle = grd;
-  ctx.fill();
-  // Outer glow
-  ctx.beginPath();
-  ctx.arc(cx, cy, sr * 2, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(180,30,30,0.12)';
-  ctx.fill();
-}
-
-/* ── Main loop ── */
 function animate() {
-  t += 0.014;
+  t += 0.012;
   ctx.clearRect(0, 0, W, H);
 
-  drawConnections(t);
+  // Background
+  const bg = ctx.createLinearGradient(0, 0, W * 0.7, H);
+  bg.addColorStop(0, '#06060f');
+  bg.addColorStop(0.5, '#0a0a1a');
+  bg.addColorStop(1, '#080810');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
 
-  // Back frames (above center y)
-  frames.filter(f => f.baseY < H * 0.5).forEach(f => drawFrame(f, t));
-  // Front frames (below center y)
-  frames.filter(f => f.baseY >= H * 0.5).forEach(f => drawFrame(f, t));
+  // Ambient glow blobs
+  const blobs = [
+    { x: W * 0.18, y: H * 0.35, r: 280, col: 'rgba(124,58,237,0.055)' },
+    { x: W * 0.55, y: H * 0.6,  r: 220, col: 'rgba(6,182,212,0.04)' },
+    { x: W * 0.82, y: H * 0.3,  r: 200, col: 'rgba(16,185,129,0.035)' },
+  ];
+  blobs.forEach(b => {
+    const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+    g.addColorStop(0, b.col);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+  });
+
+  // Update nodes
+  nodes.forEach(n => {
+    n.x += n.vx;
+    n.y += n.vy;
+    if (n.x < 0 || n.x > 1) n.vx *= -1;
+    if (n.y < 0 || n.y > 1) n.vy *= -1;
+    n.pulse += n.pulseSpeed;
+
+    // Mouse attraction
+    const px = n.x * W, py = n.y * H;
+    const dx = mouse.x - px, dy = mouse.y - py;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 200 && dist > 0) {
+      n.vx += (dx / dist) * 0.00004;
+      n.vy += (dy / dist) * 0.00004;
+    }
+    // Speed cap
+    const speed = Math.sqrt(n.vx*n.vx + n.vy*n.vy);
+    if (speed > 0.0003) { n.vx *= 0.0003/speed; n.vy *= 0.0003/speed; }
+  });
+
+  // Draw edges
+  const CONNECT_DIST = Math.min(W, H) * 0.22;
+  for (let i = 0; i < NODE_COUNT; i++) {
+    for (let j = i + 1; j < NODE_COUNT; j++) {
+      const a = nodes[i], b = nodes[j];
+      const dx = (a.x - b.x) * W, dy = (a.y - b.y) * H;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < CONNECT_DIST) {
+        const alpha = (1 - dist / CONNECT_DIST) * 0.18;
+        ctx.beginPath();
+        ctx.moveTo(a.x * W, a.y * H);
+        ctx.lineTo(b.x * W, b.y * H);
+        ctx.strokeStyle = `rgba(167,139,250,${alpha})`;
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Draw signals
+  for (let i = signals.length - 1; i >= 0; i--) {
+    const s = signals[i];
+    s.progress += s.speed;
+    if (s.progress >= 1) { signals.splice(i, 1); continue; }
+    const from = nodes[s.from], to = nodes[s.to];
+    const sx = from.x * W + (to.x * W - from.x * W) * s.progress;
+    const sy = from.y * H + (to.y * H - from.y * H) * s.progress;
+    const trail = 0.08;
+    const tx = from.x * W + (to.x * W - from.x * W) * Math.max(0, s.progress - trail);
+    const ty = from.y * H + (to.y * H - from.y * H) * Math.max(0, s.progress - trail);
+
+    const grad = ctx.createLinearGradient(tx, ty, sx, sy);
+    grad.addColorStop(0, s.col + '0)');
+    grad.addColorStop(1, s.col + '0.9)');
+    ctx.beginPath();
+    ctx.moveTo(tx, ty);
+    ctx.lineTo(sx, sy);
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Head dot
+    ctx.beginPath();
+    ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = s.col + '1)';
+    ctx.fill();
+  }
+
+  // Draw nodes
+  nodes.forEach(n => {
+    const px = n.x * W, py = n.y * H;
+    const pulseMult = 1 + Math.sin(n.pulse) * 0.3;
+    const r = n.r * pulseMult;
+
+    // Glow
+    const g = ctx.createRadialGradient(px, py, 0, px, py, r * 4);
+    g.addColorStop(0, n.col + '0.3)');
+    g.addColorStop(1, n.col + '0)');
+    ctx.beginPath();
+    ctx.arc(px, py, r * 4, 0, Math.PI * 2);
+    ctx.fillStyle = g;
+    ctx.fill();
+
+    // Core
+    ctx.beginPath();
+    ctx.arc(px, py, r, 0, Math.PI * 2);
+    ctx.fillStyle = n.col + `${0.6 + Math.sin(n.pulse) * 0.3})`;
+    ctx.fill();
+  });
 
   requestAnimationFrame(animate);
 }
@@ -382,149 +211,131 @@ requestAnimationFrame(animate);
   overflow: hidden;
 }
 
-/* Original GIF background — cover, centered */
-.hero-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-
-/* Slight darkening overlay so text is readable */
-.hero-bg-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(10,5,25,0.3);
-}
-
-#scene-canvas {
+#neural-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
 }
 
-.scene-overlay {
+.scene-layout {
   position: relative;
   z-index: 10;
-  padding: 2rem 2.5rem;
-  max-width: 320px;
-  pointer-events: none;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 3rem;
+  gap: 3rem;
+}
+
+/* ─── Left ─── */
+.scene-left {
+  flex: 0 0 48%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .badge {
   display: inline-block;
   font-size: 0.62rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
   color: #67e8f9;
   border: 1px solid rgba(103,232,249,0.35);
-  padding: 0.25rem 0.85rem;
+  padding: 0.25rem 0.9rem;
   border-radius: 999px;
-  margin-bottom: 0.9rem;
-  background: rgba(6,182,212,0.08);
+  margin-bottom: 1.4rem;
+  background: rgba(6,182,212,0.07);
+  width: fit-content;
 }
 
-.hero-text h1 {
-  font-size: clamp(2.6rem, 5vw, 4.5rem);
-  line-height: 1;
-  margin: 0 0 1rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #c4b5fd 55%, #67e8f9 100%);
+.scene-left h1 {
+  font-size: clamp(3rem, 5.5vw, 5.2rem);
+  line-height: 0.95;
+  margin: 0 0 1.4rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #c4b5fd 50%, #67e8f9 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   font-weight: 800;
-  letter-spacing: -0.02em;
-  text-shadow: none;
-  filter: drop-shadow(0 2px 12px rgba(0,0,0,0.5));
+  letter-spacing: -0.03em;
 }
 
-.hero-text p {
-  color: rgba(220,210,240,0.85);
-  font-size: 0.86rem;
-  line-height: 1.7;
-  margin: 0 0 1.4rem;
+.tagline {
+  color: rgba(200,195,230,0.8);
+  font-size: 0.9rem;
+  line-height: 1.75;
+  margin: 0 0 2rem;
   white-space: pre-line;
-  text-shadow: 0 1px 6px rgba(0,0,0,0.7);
+  max-width: 380px;
 }
 
 .hero-cta {
   display: inline-block;
   background: linear-gradient(135deg, #7c3aed, #06b6d4);
   color: white;
-  padding: 0.65rem 1.7rem;
+  padding: 0.75rem 2rem;
   border-radius: 999px;
   font-weight: 700;
-  font-size: 0.84rem;
-  box-shadow: 0 0 22px rgba(124,58,237,0.5);
-  pointer-events: all;
+  font-size: 0.88rem;
+  box-shadow: 0 0 28px rgba(124,58,237,0.5);
+  width: fit-content;
+  margin-bottom: 2.5rem;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .hero-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 36px rgba(124,58,237,0.7);
+  box-shadow: 0 0 40px rgba(124,58,237,0.7);
   color: white;
   text-decoration: none;
 }
 
-.click-hint {
-  position: absolute;
-  bottom: 1.8rem;
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgba(220,200,240,0.55);
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  animation: hint-fade 2.5s ease-in-out infinite;
-  white-space: nowrap;
-  z-index: 10;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+.stats {
+  display: flex;
+  gap: 2rem;
 }
-@keyframes hint-fade {
-  0%, 100% { opacity: 0.3; } 50% { opacity: 0.9; }
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+.stat-n {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #a78bfa;
+  font-family: monospace;
+}
+.stat-l {
+  font-size: 0.72rem;
+  color: rgba(148,163,184,0.75);
+  margin-top: 0.15rem;
 }
 
-/* Modal */
-.kg-modal {
-  position: absolute;
-  inset: 0;
-  z-index: 50;
+/* ─── Right ─── */
+.scene-right {
+  flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: rgba(7,5,20,0);
-  pointer-events: none;
-  transition: background 0.3s;
 }
-.kg-modal.open {
-  background: rgba(7,5,20,0.82);
-  pointer-events: all;
-  backdrop-filter: blur(10px);
-}
-.kg-modal-panel {
-  position: relative;
-  width: min(460px, 90vw);
-  background: rgba(12,8,32,0.97);
-  border: 1px solid rgba(124,58,237,0.45);
+
+.graph-panel {
+  width: 100%;
+  background: rgba(10,8,24,0.6);
+  border: 1px solid rgba(45,45,78,0.8);
   border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 0 60px rgba(124,58,237,0.3);
-  transform: scale(0.85) translateY(16px);
-  opacity: 0;
-  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+  padding: 1.2rem 1.4rem;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 0 40px rgba(124,58,237,0.08), inset 0 0 0 1px rgba(167,139,250,0.06);
 }
-.kg-modal.open .kg-modal-panel {
-  transform: scale(1) translateY(0);
-  opacity: 1;
+
+.graph-panel :global(.kg-wrapper) { margin: 0; }
+.graph-panel :global(.kg-title) { font-size: 1rem; }
+
+@media (max-width: 900px) {
+  .scene-layout { flex-direction: column; height: auto; padding: 5rem 1.5rem 2rem; gap: 2rem; }
+  .scene-left { flex: none; }
+  .scene-right { width: 100%; }
 }
-.kg-close {
-  position: absolute;
-  top: 1rem; right: 1.1rem;
-  background: none; border: none;
-  color: #94a3b8; font-size: 1.1rem;
-  cursor: pointer; padding: 0.2rem 0.5rem; border-radius: 6px;
-}
-.kg-close:hover { color: #06b6d4; background: rgba(6,182,212,0.1); }
 </style>
