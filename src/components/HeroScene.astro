@@ -1,204 +1,380 @@
 ---
-import KnowledgeGraph from './KnowledgeGraph.astro';
 const lang = Astro.currentLocale ?? 'en';
+const base = '/Circle-of-Life';
 ---
 
 <section class="hero-scene" id="hero-scene">
-  <!-- Neural network animated background -->
   <canvas id="neural-canvas"></canvas>
 
-  <div class="scene-layout">
-    <!-- Left: text -->
-    <div class="scene-left">
-      <span class="badge">Biotech · Neuroscience · 2025</span>
-      <h1>{lang === 'zh' ? <>生之<br/>回环</> : <>Circle<br/>of Life</>}</h1>
-      <p class="tagline">{lang === 'zh'
-        ? '研究者视角的生命科学洞见\n聚焦创新药与神经科学前沿'
-        : 'Biotech insights from inside the lab.\nInnovative drugs · Neuroscience · Metabolism.'}</p>
-      <a href="https://your-substack.substack.com" target="_blank" class="hero-cta">
-        {lang === 'zh' ? '订阅周刊 →' : 'Subscribe →'}
-      </a>
-      <div class="stats">
-        <div class="stat"><span class="stat-n">7+</span><span class="stat-l">{lang === 'zh' ? '研究领域' : 'Research Areas'}</span></div>
-        <div class="stat"><span class="stat-n">Weekly</span><span class="stat-l">{lang === 'zh' ? '内容更新' : 'Updates'}</span></div>
-        <div class="stat"><span class="stat-n">2025</span><span class="stat-l">{lang === 'zh' ? '最新前沿' : 'Cutting Edge'}</span></div>
-      </div>
-    </div>
-
-    <!-- Right: knowledge graph -->
-    <div class="scene-right">
-      <div class="graph-panel">
-        <KnowledgeGraph />
-      </div>
-    </div>
+  <div class="scene-left">
+    <span class="badge">Biotech · Neuroscience · 2025</span>
+    <h1>{lang === 'zh' ? <>生之<br/>回环</> : <>Circle<br/>of Life</>}</h1>
+    <p class="tagline">{lang === 'zh'
+      ? '研究者视角的生命科学洞见\n聚焦创新药与神经科学前沿'
+      : 'Biotech insights from inside the lab.\nInnovative drugs · Neuroscience · Metabolism.'}</p>
+    <a href="https://your-substack.substack.com" target="_blank" class="hero-cta">
+      {lang === 'zh' ? '订阅周刊 →' : 'Subscribe →'}
+    </a>
+    <p class="graph-hint">{lang === 'zh' ? '→ 点击右侧节点探索相关文章' : '→ Click nodes to explore articles'}</p>
   </div>
 </section>
 
-<script>
-const canvas = document.getElementById('neural-canvas') as HTMLCanvasElement;
-const ctx = canvas.getContext('2d')!;
+<script define:vars={{ lang, base }}>
+const canvas = document.getElementById('neural-canvas');
+const ctx = canvas.getContext('2d');
 let W = 0, H = 0;
-const mouse = { x: -9999, y: -9999 };
 let t = 0;
 
-function resize() {
-  W = canvas.width = canvas.offsetWidth;
-  H = canvas.height = canvas.offsetHeight;
-}
-resize();
-window.addEventListener('resize', resize);
+/* ── Mouse / comet ── */
+const mouse = { x: -9999, y: -9999 };
+const cometTrail = [];
+const TRAIL_LEN = 28;
+
 window.addEventListener('mousemove', e => {
   const r = canvas.getBoundingClientRect();
   mouse.x = e.clientX - r.left;
   mouse.y = e.clientY - r.top;
+  cometTrail.unshift({ x: mouse.x, y: mouse.y });
+  if (cometTrail.length > TRAIL_LEN) cometTrail.pop();
 });
 
-/* ── Neural nodes ── */
-const NODE_COUNT = 60;
-type Node = { x: number; y: number; vx: number; vy: number; r: number; pulse: number; pulseSpeed: number; col: string };
-const COLS = ['rgba(167,139,250,', 'rgba(6,182,212,', 'rgba(16,185,129,', 'rgba(245,158,11,'];
+function resize() {
+  W = canvas.width = canvas.offsetWidth;
+  H = canvas.height = canvas.offsetHeight;
+  placeNodes();
+}
+window.addEventListener('resize', resize);
 
-const nodes: Node[] = Array.from({ length: NODE_COUNT }, () => ({
-  x: Math.random() * 1,
-  y: Math.random() * 1,
-  vx: (Math.random() - 0.5) * 0.00015,
-  vy: (Math.random() - 0.5) * 0.00015,
-  r: Math.random() * 2.5 + 1,
+/* ── Knowledge graph nodes (right side) ── */
+const KG_NODES = [
+  { id: 'metabolism', label: lang === 'zh' ? '代谢' : 'Metabolism',   color: '#10b981', size: 26, url: null,   type: 'root' },
+  { id: 'neuro',      label: lang === 'zh' ? '脑科学' : 'Neuroscience', color: '#7c3aed', size: 26, url: null,   type: 'root' },
+  { id: 'immune',     label: lang === 'zh' ? '免疫' : 'Immunology',    color: '#f59e0b', size: 26, url: null,   type: 'root' },
+
+  { id: 'mash',    label: 'MASH/MASLD', color: '#34d399', size: 16, url: `${base}/blog/mash-pipeline-en/`, type: 'leaf' },
+  { id: 'glp1',    label: 'GLP-1',       color: '#34d399', size: 16, url: null, type: 'leaf' },
+  { id: 'lipid',   label: lang === 'zh' ? '脂质' : 'Lipid',      color: '#34d399', size: 14, url: null, type: 'leaf' },
+  { id: 'insulin', label: lang === 'zh' ? '胰岛素' : 'Insulin',   color: '#34d399', size: 14, url: null, type: 'leaf' },
+  { id: 'mito',    label: lang === 'zh' ? '线粒体' : 'Mitochondria', color: '#34d399', size: 14, url: null, type: 'leaf' },
+
+  { id: 'bci',        label: 'BCI',                         color: '#a78bfa', size: 16, url: `${base}/blog/BCI-future-en/`, type: 'leaf' },
+  { id: 'alzheimer',  label: "Alzheimer's",                 color: '#a78bfa', size: 14, url: null, type: 'leaf' },
+  { id: 'parkinson',  label: "Parkinson's",                 color: '#a78bfa', size: 14, url: null, type: 'leaf' },
+  { id: 'neuromod',   label: lang === 'zh' ? '神经调控' : 'Neuromod', color: '#a78bfa', size: 14, url: null, type: 'leaf' },
+
+  { id: 'cart',       label: 'CAR-T',                       color: '#fcd34d', size: 16, url: null, type: 'leaf' },
+  { id: 'checkpoint', label: lang === 'zh' ? '检查点' : 'Checkpoint', color: '#fcd34d', size: 14, url: null, type: 'leaf' },
+  { id: 'autoimmune', label: lang === 'zh' ? '自身免疫' : 'Autoimmune', color: '#fcd34d', size: 14, url: null, type: 'leaf' },
+  { id: 'senescence', label: lang === 'zh' ? '衰老' : 'Senescence', color: '#fcd34d', size: 14, url: null, type: 'leaf' },
+];
+
+const KG_LINKS = [
+  ['metabolism','mash'],['metabolism','glp1'],['metabolism','lipid'],
+  ['metabolism','insulin'],['metabolism','mito'],
+  ['neuro','bci'],['neuro','alzheimer'],['neuro','parkinson'],['neuro','neuromod'],
+  ['immune','cart'],['immune','checkpoint'],['immune','autoimmune'],['immune','senescence'],
+  ['glp1','mash'],['senescence','mito'],['insulin','alzheimer'],
+];
+
+/* ── Background ambient nodes (non-interactive, fill left side) ── */
+const BG_NODES = Array.from({ length: 45 }, () => ({
+  x: Math.random(),
+  y: Math.random(),
+  vx: (Math.random() - 0.5) * 0.00012,
+  vy: (Math.random() - 0.5) * 0.00012,
+  r: Math.random() * 2 + 0.8,
   pulse: Math.random() * Math.PI * 2,
-  pulseSpeed: 0.02 + Math.random() * 0.03,
-  col: COLS[Math.floor(Math.random() * COLS.length)],
+  pSpeed: 0.02 + Math.random() * 0.025,
+  col: ['rgba(167,139,250,','rgba(6,182,212,','rgba(16,185,129,'][Math.floor(Math.random()*3)],
 }));
 
-/* ── Signal packets traveling along edges ── */
-type Signal = { from: number; to: number; progress: number; speed: number; col: string };
-const signals: Signal[] = [];
+/* ── Signal packets ── */
+const signals = [];
 function spawnSignal() {
-  const from = Math.floor(Math.random() * NODE_COUNT);
-  const to = Math.floor(Math.random() * NODE_COUNT);
-  if (from === to) return;
-  signals.push({ from, to, progress: 0, speed: 0.004 + Math.random() * 0.006, col: COLS[Math.floor(Math.random() * COLS.length)] });
+  // Signals on KG links
+  if (KG_LINKS.length > 0 && Math.random() > 0.4) {
+    const link = KG_LINKS[Math.floor(Math.random() * KG_LINKS.length)];
+    const from = KG_NODES.find(n => n.id === link[0]);
+    const to   = KG_NODES.find(n => n.id === link[1]);
+    if (from && to && from.x !== undefined) {
+      signals.push({ fromX: from.x, fromY: from.y, toX: to.x, toY: to.y,
+        progress: 0, speed: 0.006 + Math.random() * 0.008,
+        col: from.color, isKG: true });
+    }
+  } else {
+    // BG ambient signals
+    const from = BG_NODES[Math.floor(Math.random() * BG_NODES.length)];
+    const to   = BG_NODES[Math.floor(Math.random() * BG_NODES.length)];
+    signals.push({ fromX: from.x * W, fromY: from.y * H,
+      toX: to.x * W, toY: to.y * H,
+      progress: 0, speed: 0.004 + Math.random() * 0.006,
+      col: from.col + '', isKG: false });
+  }
 }
-setInterval(spawnSignal, 400);
+setInterval(spawnSignal, 300);
 
+/* ── Position KG nodes using force layout ── */
+function placeNodes() {
+  const cx = W * 0.7, cy = H * 0.5;
+  const roots = KG_NODES.filter(n => n.type === 'root');
+  const rootAngle = (Math.PI * 2) / roots.length;
+  const rootR = Math.min(W, H) * 0.14;
+  const leafR  = Math.min(W, H) * 0.11;
+
+  roots.forEach((r, i) => {
+    r.x = cx + Math.cos(i * rootAngle - Math.PI/2) * rootR;
+    r.y = cy + Math.sin(i * rootAngle - Math.PI/2) * rootR;
+
+    const children = KG_LINKS
+      .filter(l => l[0] === r.id)
+      .map(l => KG_NODES.find(n => n.id === l[1]))
+      .filter(Boolean);
+
+    children.forEach((child, j) => {
+      const spread = (Math.PI * 0.7) / Math.max(children.length - 1, 1);
+      const baseAngle = i * rootAngle - Math.PI/2;
+      const childAngle = baseAngle - spread * (children.length - 1) / 2 + spread * j;
+      child.x = r.x + Math.cos(childAngle) * leafR;
+      child.y = r.y + Math.sin(childAngle) * leafR;
+    });
+  });
+
+  // Cross links need positions too
+  KG_NODES.filter(n => !n.x).forEach(n => {
+    n.x = cx + (Math.random() - 0.5) * W * 0.2;
+    n.y = cy + (Math.random() - 0.5) * H * 0.3;
+  });
+}
+
+/* ── Click detection ── */
+let hoveredNode = null;
+
+canvas.addEventListener('mousemove', () => {
+  hoveredNode = null;
+  for (const n of KG_NODES) {
+    if (!n.x) continue;
+    const dx = mouse.x - n.x, dy = mouse.y - n.y;
+    if (dx*dx + dy*dy < (n.size + 8) ** 2) {
+      hoveredNode = n;
+      break;
+    }
+  }
+  canvas.style.cursor = hoveredNode?.url ? 'pointer' : 'none';
+});
+
+canvas.addEventListener('click', () => {
+  if (hoveredNode?.url) window.location.href = hoveredNode.url;
+});
+
+/* ── Draw comet trail ── */
+function drawComet() {
+  if (cometTrail.length < 2) return;
+  for (let i = 1; i < cometTrail.length; i++) {
+    const ratio = 1 - i / cometTrail.length;
+    const prev = cometTrail[i-1], curr = cometTrail[i];
+    ctx.beginPath();
+    ctx.moveTo(prev.x, prev.y);
+    ctx.lineTo(curr.x, curr.y);
+    ctx.strokeStyle = `rgba(255,255,255,${ratio * 0.55})`;
+    ctx.lineWidth = ratio * 3;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+  }
+  // Comet head
+  if (cometTrail[0]) {
+    const g = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 10);
+    g.addColorStop(0, 'rgba(255,255,255,0.9)');
+    g.addColorStop(0.4, 'rgba(167,139,250,0.6)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.arc(mouse.x, mouse.y, 10, 0, Math.PI * 2);
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(mouse.x, mouse.y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.fill();
+  }
+}
+
+/* ── Draw KG ── */
+function drawKG() {
+  // Links
+  for (const [src, tgt] of KG_LINKS) {
+    const s = KG_NODES.find(n => n.id === src);
+    const t2 = KG_NODES.find(n => n.id === tgt);
+    if (!s?.x || !t2?.x) continue;
+    ctx.beginPath();
+    ctx.moveTo(s.x, s.y);
+    ctx.lineTo(t2.x, t2.y);
+    ctx.strokeStyle = 'rgba(45,45,78,0.8)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+  }
+
+  // Nodes
+  for (const n of KG_NODES) {
+    if (!n.x) continue;
+    const isHov = n === hoveredNode;
+    const pulse = 1 + Math.sin(t * 1.5 + n.x * 0.01) * 0.12;
+    const r = n.size * pulse;
+
+    // Outer glow
+    const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 2.5);
+    g.addColorStop(0, n.color + (isHov ? '55' : '30'));
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, r * 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = g;
+    ctx.fill();
+
+    // Circle fill
+    const fill = ctx.createRadialGradient(n.x - r*0.3, n.y - r*0.3, 1, n.x, n.y, r);
+    fill.addColorStop(0, n.color + (n.type === 'root' ? 'aa' : '55'));
+    fill.addColorStop(1, n.color + (n.type === 'root' ? '33' : '18'));
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = n.color + (isHov ? 'ff' : '99');
+    ctx.lineWidth = isHov ? 2 : 1.5;
+    ctx.stroke();
+
+    // URL indicator dot
+    if (n.url) {
+      ctx.beginPath();
+      ctx.arc(n.x + r * 0.65, n.y - r * 0.65, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = isHov ? '#ffffff' : '#a78bfa';
+      ctx.fill();
+    }
+
+    // Label
+    ctx.fillStyle = n.color;
+    ctx.font = `${n.type === 'root' ? 'bold ' : ''}${Math.max(9, n.size * 0.7)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 6;
+    ctx.fillText(n.label, n.x, n.y);
+    ctx.shadowBlur = 0;
+  }
+}
+
+/* ── Main loop ── */
 function animate() {
-  t += 0.012;
+  t += 0.014;
   ctx.clearRect(0, 0, W, H);
 
-  // Background
-  const bg = ctx.createLinearGradient(0, 0, W * 0.7, H);
-  bg.addColorStop(0, '#06060f');
-  bg.addColorStop(0.5, '#0a0a1a');
-  bg.addColorStop(1, '#080810');
+  // Background gradient
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#05050e');
+  bg.addColorStop(0.5, '#090916');
+  bg.addColorStop(1, '#070710');
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  // Ambient glow blobs
-  const blobs = [
-    { x: W * 0.18, y: H * 0.35, r: 280, col: 'rgba(124,58,237,0.055)' },
-    { x: W * 0.55, y: H * 0.6,  r: 220, col: 'rgba(6,182,212,0.04)' },
-    { x: W * 0.82, y: H * 0.3,  r: 200, col: 'rgba(16,185,129,0.035)' },
-  ];
-  blobs.forEach(b => {
-    const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
-    g.addColorStop(0, b.col);
+  // Ambient glows
+  [[W*0.18, H*0.4, 300, 'rgba(124,58,237,0.055)'],
+   [W*0.72, H*0.5, 260, 'rgba(6,182,212,0.04)'],
+   [W*0.5,  H*0.2, 180, 'rgba(16,185,129,0.03)']].forEach(([bx,by,br,bc]) => {
+    const g = ctx.createRadialGradient(bx,by,0,bx,by,br);
+    g.addColorStop(0, bc);
     g.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
   });
 
-  // Update nodes
-  nodes.forEach(n => {
-    n.x += n.vx;
-    n.y += n.vy;
+  // Update & draw BG nodes
+  const CDIST = Math.min(W, H) * 0.18;
+  BG_NODES.forEach(n => {
+    n.x += n.vx; n.y += n.vy;
     if (n.x < 0 || n.x > 1) n.vx *= -1;
     if (n.y < 0 || n.y > 1) n.vy *= -1;
-    n.pulse += n.pulseSpeed;
-
-    // Mouse attraction
-    const px = n.x * W, py = n.y * H;
-    const dx = mouse.x - px, dy = mouse.y - py;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    if (dist < 200 && dist > 0) {
-      n.vx += (dx / dist) * 0.00004;
-      n.vy += (dy / dist) * 0.00004;
-    }
-    // Speed cap
-    const speed = Math.sqrt(n.vx*n.vx + n.vy*n.vy);
-    if (speed > 0.0003) { n.vx *= 0.0003/speed; n.vy *= 0.0003/speed; }
+    n.pulse += n.pSpeed;
   });
 
-  // Draw edges
-  const CONNECT_DIST = Math.min(W, H) * 0.22;
-  for (let i = 0; i < NODE_COUNT; i++) {
-    for (let j = i + 1; j < NODE_COUNT; j++) {
-      const a = nodes[i], b = nodes[j];
-      const dx = (a.x - b.x) * W, dy = (a.y - b.y) * H;
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      if (dist < CONNECT_DIST) {
-        const alpha = (1 - dist / CONNECT_DIST) * 0.18;
+  // BG edges
+  for (let i = 0; i < BG_NODES.length; i++) {
+    for (let j = i+1; j < BG_NODES.length; j++) {
+      const a = BG_NODES[i], b = BG_NODES[j];
+      const dx = (a.x-b.x)*W, dy = (a.y-b.y)*H;
+      const dist = Math.sqrt(dx*dx+dy*dy);
+      if (dist < CDIST) {
         ctx.beginPath();
-        ctx.moveTo(a.x * W, a.y * H);
-        ctx.lineTo(b.x * W, b.y * H);
-        ctx.strokeStyle = `rgba(167,139,250,${alpha})`;
-        ctx.lineWidth = 0.6;
+        ctx.moveTo(a.x*W, a.y*H);
+        ctx.lineTo(b.x*W, b.y*H);
+        ctx.strokeStyle = `rgba(167,139,250,${(1-dist/CDIST)*0.12})`;
+        ctx.lineWidth = 0.5;
         ctx.stroke();
       }
     }
   }
 
-  // Draw signals
-  for (let i = signals.length - 1; i >= 0; i--) {
+  // BG node circles
+  BG_NODES.forEach(n => {
+    const px = n.x*W, py = n.y*H;
+    const r = n.r * (1 + Math.sin(n.pulse)*0.3);
+    const g = ctx.createRadialGradient(px,py,0,px,py,r*3.5);
+    g.addColorStop(0, n.col+'0.25)');
+    g.addColorStop(1, n.col+'0)');
+    ctx.beginPath(); ctx.arc(px,py,r*3.5,0,Math.PI*2);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.beginPath(); ctx.arc(px,py,r,0,Math.PI*2);
+    ctx.fillStyle = n.col+`${0.55+Math.sin(n.pulse)*0.25})`; ctx.fill();
+  });
+
+  // Signals
+  for (let i = signals.length-1; i >= 0; i--) {
     const s = signals[i];
     s.progress += s.speed;
-    if (s.progress >= 1) { signals.splice(i, 1); continue; }
-    const from = nodes[s.from], to = nodes[s.to];
-    const sx = from.x * W + (to.x * W - from.x * W) * s.progress;
-    const sy = from.y * H + (to.y * H - from.y * H) * s.progress;
-    const trail = 0.08;
-    const tx = from.x * W + (to.x * W - from.x * W) * Math.max(0, s.progress - trail);
-    const ty = from.y * H + (to.y * H - from.y * H) * Math.max(0, s.progress - trail);
+    if (s.progress >= 1) { signals.splice(i,1); continue; }
 
-    const grad = ctx.createLinearGradient(tx, ty, sx, sy);
-    grad.addColorStop(0, s.col + '0)');
-    grad.addColorStop(1, s.col + '0.9)');
+    const fromX = s.isKG ? s.fromX : s.fromX;
+    const fromY = s.isKG ? s.fromY : s.fromY;
+    const toX = s.isKG ? s.toX : s.toX;
+    const toY = s.isKG ? s.toY : s.toY;
+
+    const sx = fromX + (toX-fromX)*s.progress;
+    const sy = fromY + (toY-fromY)*s.progress;
+    const trail = 0.1;
+    const tx = fromX + (toX-fromX)*Math.max(0, s.progress-trail);
+    const ty = fromY + (toY-fromY)*Math.max(0, s.progress-trail);
+
+    const col = s.isKG ? s.col : s.col+'1)';
+    const grad = ctx.createLinearGradient(tx,ty,sx,sy);
+    grad.addColorStop(0, (s.isKG ? s.col : s.col)+'00'.padEnd(2,'0'));
+    grad.addColorStop(1, s.isKG ? s.col+'ee' : s.col+'0.8)');
     ctx.beginPath();
-    ctx.moveTo(tx, ty);
-    ctx.lineTo(sx, sy);
+    ctx.moveTo(tx,ty); ctx.lineTo(sx,sy);
     ctx.strokeStyle = grad;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = s.isKG ? 2 : 1.2;
     ctx.stroke();
-
-    // Head dot
     ctx.beginPath();
-    ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
-    ctx.fillStyle = s.col + '1)';
+    ctx.arc(sx,sy, s.isKG ? 3.5 : 2, 0, Math.PI*2);
+    ctx.fillStyle = s.isKG ? s.col+'ff' : s.col+'0.9)';
     ctx.fill();
   }
 
-  // Draw nodes
-  nodes.forEach(n => {
-    const px = n.x * W, py = n.y * H;
-    const pulseMult = 1 + Math.sin(n.pulse) * 0.3;
-    const r = n.r * pulseMult;
+  // Divider line between left text and right KG
+  ctx.beginPath();
+  ctx.moveTo(W*0.47, H*0.1);
+  ctx.lineTo(W*0.47, H*0.9);
+  ctx.strokeStyle = 'rgba(45,45,78,0.5)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4,8]);
+  ctx.stroke();
+  ctx.setLineDash([]);
 
-    // Glow
-    const g = ctx.createRadialGradient(px, py, 0, px, py, r * 4);
-    g.addColorStop(0, n.col + '0.3)');
-    g.addColorStop(1, n.col + '0)');
-    ctx.beginPath();
-    ctx.arc(px, py, r * 4, 0, Math.PI * 2);
-    ctx.fillStyle = g;
-    ctx.fill();
+  // KG on right
+  drawKG();
 
-    // Core
-    ctx.beginPath();
-    ctx.arc(px, py, r, 0, Math.PI * 2);
-    ctx.fillStyle = n.col + `${0.6 + Math.sin(n.pulse) * 0.3})`;
-    ctx.fill();
-  });
+  // Comet on top of everything
+  drawComet();
 
   requestAnimationFrame(animate);
 }
+
+resize();
 requestAnimationFrame(animate);
 </script>
 
@@ -209,6 +385,7 @@ requestAnimationFrame(animate);
   height: 100vh;
   min-height: 600px;
   overflow: hidden;
+  cursor: none;
 }
 
 #neural-canvas {
@@ -218,24 +395,17 @@ requestAnimationFrame(animate);
   height: 100%;
 }
 
-.scene-layout {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  height: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 3rem;
-  gap: 3rem;
-}
-
-/* ─── Left ─── */
+/* Left text overlay */
 .scene-left {
-  flex: 0 0 48%;
+  position: absolute;
+  z-index: 10;
+  top: 50%;
+  left: 3rem;
+  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 0;
+  max-width: 340px;
+  pointer-events: none;
 }
 
 .badge {
@@ -253,9 +423,9 @@ requestAnimationFrame(animate);
 }
 
 .scene-left h1 {
-  font-size: clamp(3rem, 5.5vw, 5.2rem);
+  font-size: clamp(3rem, 5vw, 5rem);
   line-height: 0.95;
-  margin: 0 0 1.4rem;
+  margin: 0 0 1.3rem;
   background: linear-gradient(135deg, #f8fafc 0%, #c4b5fd 50%, #67e8f9 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -265,25 +435,25 @@ requestAnimationFrame(animate);
 }
 
 .tagline {
-  color: rgba(200,195,230,0.8);
-  font-size: 0.9rem;
+  color: rgba(200,195,230,0.78);
+  font-size: 0.88rem;
   line-height: 1.75;
-  margin: 0 0 2rem;
+  margin: 0 0 1.8rem;
   white-space: pre-line;
-  max-width: 380px;
 }
 
 .hero-cta {
   display: inline-block;
   background: linear-gradient(135deg, #7c3aed, #06b6d4);
   color: white;
-  padding: 0.75rem 2rem;
+  padding: 0.7rem 1.9rem;
   border-radius: 999px;
   font-weight: 700;
-  font-size: 0.88rem;
+  font-size: 0.87rem;
   box-shadow: 0 0 28px rgba(124,58,237,0.5);
   width: fit-content;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
+  pointer-events: all;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .hero-cta:hover {
@@ -291,51 +461,22 @@ requestAnimationFrame(animate);
   box-shadow: 0 0 40px rgba(124,58,237,0.7);
   color: white;
   text-decoration: none;
+  cursor: pointer;
 }
 
-.stats {
-  display: flex;
-  gap: 2rem;
-}
-.stat {
-  display: flex;
-  flex-direction: column;
-}
-.stat-n {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #a78bfa;
-  font-family: monospace;
-}
-.stat-l {
+.graph-hint {
   font-size: 0.72rem;
-  color: rgba(148,163,184,0.75);
-  margin-top: 0.15rem;
+  color: rgba(167,139,250,0.55);
+  letter-spacing: 0.06em;
+  animation: hint-fade 2.5s ease-in-out infinite;
+  margin: 0;
+}
+@keyframes hint-fade {
+  0%, 100% { opacity: 0.3; } 50% { opacity: 0.9; }
 }
 
-/* ─── Right ─── */
-.scene-right {
-  flex: 1;
-  display: flex;
-  align-items: center;
-}
-
-.graph-panel {
-  width: 100%;
-  background: rgba(10,8,24,0.6);
-  border: 1px solid rgba(45,45,78,0.8);
-  border-radius: 20px;
-  padding: 1.2rem 1.4rem;
-  backdrop-filter: blur(16px);
-  box-shadow: 0 0 40px rgba(124,58,237,0.08), inset 0 0 0 1px rgba(167,139,250,0.06);
-}
-
-.graph-panel :global(.kg-wrapper) { margin: 0; }
-.graph-panel :global(.kg-title) { font-size: 1rem; }
-
-@media (max-width: 900px) {
-  .scene-layout { flex-direction: column; height: auto; padding: 5rem 1.5rem 2rem; gap: 2rem; }
-  .scene-left { flex: none; }
-  .scene-right { width: 100%; }
+@media (max-width: 700px) {
+  .scene-left { left: 1.5rem; right: 1.5rem; max-width: 100%; transform: translateY(-65%); }
+  .scene-left h1 { font-size: 2.5rem; }
 }
 </style>
