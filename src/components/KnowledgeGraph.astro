@@ -1,0 +1,167 @@
+---
+const lang = Astro.currentLocale ?? 'zh';
+---
+<div class="kg-wrapper">
+  <h2 class="kg-title">{lang === 'en' ? 'Knowledge Network' : '知识网络'}</h2>
+  <p class="kg-subtitle">
+    {lang === 'en'
+      ? 'Click nodes to explore topics · Drag to rearrange'
+      : '点击节点探索相关话题 · 拖拽节点重新排列'}
+  </p>
+  <div id="knowledge-graph"></div>
+</div>
+
+<script define:vars={{ lang }}>
+const labels = {
+  zh: {
+    metabolism: '代谢', neuro: '脑科学', immune: '免疫',
+    mash: 'MASH/MASLD', glp1: 'GLP-1', lipid: '脂质代谢',
+    insulin: '胰岛素抵抗', mito: '线粒体功能',
+    bci: '脑机接口', alzheimer: '阿尔茨海默', parkinson: '帕金森',
+    neuromod: '神经调控', neurodegen: '神经退行',
+    cart: 'CAR-T', checkpoint: '免疫检查点', autoimmune: '自身免疫',
+    neuroinflame: '神经炎症', senescence: '衰老免疫',
+  },
+  en: {
+    metabolism: 'Metabolism', neuro: 'Neuroscience', immune: 'Immunology',
+    mash: 'MASH/MASLD', glp1: 'GLP-1', lipid: 'Lipid Metabolism',
+    insulin: 'Insulin Resistance', mito: 'Mitochondria',
+    bci: 'Brain-Computer Interface', alzheimer: "Alzheimer's", parkinson: "Parkinson's",
+    neuromod: 'Neuromodulation', neurodegen: 'Neurodegeneration',
+    cart: 'CAR-T', checkpoint: 'Immune Checkpoint', autoimmune: 'Autoimmunity',
+    neuroinflame: 'Neuroinflammation', senescence: 'Immune Aging',
+  }
+};
+
+const t = labels[lang] || labels.zh;
+const articleBase = lang === 'en' ? '/en/blog/' : '/blog/';
+
+const nodes = [
+  { id: 'metabolism', label: t.metabolism, type: 'root', color: '#10b981', size: 32, url: null },
+  { id: 'neuro',      label: t.neuro,      type: 'root', color: '#7c3aed', size: 32, url: null },
+  { id: 'immune',     label: t.immune,     type: 'root', color: '#f59e0b', size: 32, url: null },
+
+  { id: 'mash',      label: t.mash,      type: 'metabolism', color: '#34d399', size: 18, url: `${articleBase}mash-pipeline-${lang === 'en' ? 'en' : 'zh'}/` },
+  { id: 'glp1',      label: t.glp1,      type: 'metabolism', color: '#34d399', size: 18, url: null },
+  { id: 'lipid',     label: t.lipid,     type: 'metabolism', color: '#34d399', size: 18, url: null },
+  { id: 'insulin',   label: t.insulin,   type: 'metabolism', color: '#34d399', size: 18, url: null },
+  { id: 'mito',      label: t.mito,      type: 'metabolism', color: '#34d399', size: 18, url: null },
+
+  { id: 'bci',        label: t.bci,        type: 'neuro', color: '#a78bfa', size: 18, url: null },
+  { id: 'alzheimer',  label: t.alzheimer,  type: 'neuro', color: '#a78bfa', size: 18, url: null },
+  { id: 'parkinson',  label: t.parkinson,  type: 'neuro', color: '#a78bfa', size: 18, url: null },
+  { id: 'neuromod',   label: t.neuromod,   type: 'neuro', color: '#a78bfa', size: 18, url: null },
+  { id: 'neurodegen', label: t.neurodegen, type: 'neuro', color: '#a78bfa', size: 18, url: null },
+
+  { id: 'cart',        label: t.cart,        type: 'immune', color: '#fcd34d', size: 18, url: null },
+  { id: 'checkpoint',  label: t.checkpoint,  type: 'immune', color: '#fcd34d', size: 18, url: null },
+  { id: 'autoimmune',  label: t.autoimmune,  type: 'immune', color: '#fcd34d', size: 18, url: null },
+  { id: 'neuroinflame',label: t.neuroinflame,type: 'immune', color: '#fcd34d', size: 18, url: null },
+  { id: 'senescence',  label: t.senescence,  type: 'immune', color: '#fcd34d', size: 18, url: null },
+];
+
+const links = [
+  { source: 'metabolism', target: 'mash' },
+  { source: 'metabolism', target: 'glp1' },
+  { source: 'metabolism', target: 'lipid' },
+  { source: 'metabolism', target: 'insulin' },
+  { source: 'metabolism', target: 'mito' },
+  { source: 'neuro', target: 'bci' },
+  { source: 'neuro', target: 'alzheimer' },
+  { source: 'neuro', target: 'parkinson' },
+  { source: 'neuro', target: 'neuromod' },
+  { source: 'neuro', target: 'neurodegen' },
+  { source: 'immune', target: 'cart' },
+  { source: 'immune', target: 'checkpoint' },
+  { source: 'immune', target: 'autoimmune' },
+  { source: 'immune', target: 'neuroinflame' },
+  { source: 'immune', target: 'senescence' },
+  { source: 'glp1', target: 'mash', dashed: true },
+  { source: 'neuroinflame', target: 'alzheimer', dashed: true },
+  { source: 'neuroinflame', target: 'neuro', dashed: true },
+  { source: 'senescence', target: 'mito', dashed: true },
+  { source: 'insulin', target: 'alzheimer', dashed: true },
+];
+
+const script = document.createElement('script');
+script.src = 'https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js';
+script.onload = initGraph;
+document.head.appendChild(script);
+
+function initGraph() {
+  const container = document.getElementById('knowledge-graph');
+  const W = container.clientWidth || 800;
+  const H = 520;
+
+  const svg = d3.select('#knowledge-graph')
+    .append('svg')
+    .attr('width', W).attr('height', H)
+    .attr('viewBox', `0 0 ${W} ${H}`);
+
+  svg.append('rect').attr('width', W).attr('height', H)
+    .attr('fill', '#0f0f1a').attr('rx', 12);
+
+  const simulation = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(d => d.id).distance(d => {
+      const s = nodes.find(n => n.id === (d.source.id || d.source));
+      return s && s.type === 'root' ? 120 : 75;
+    }))
+    .force('charge', d3.forceManyBody().strength(-320))
+    .force('center', d3.forceCenter(W / 2, H / 2))
+    .force('collision', d3.forceCollide().radius(d => d.size + 14));
+
+  const link = svg.append('g').selectAll('line')
+    .data(links).join('line')
+    .attr('stroke', d => d.dashed ? '#374151' : '#2d2d4e')
+    .attr('stroke-width', d => d.dashed ? 1 : 1.5)
+    .attr('stroke-dasharray', d => d.dashed ? '4 3' : null)
+    .attr('opacity', 0.7);
+
+  const node = svg.append('g').selectAll('g')
+    .data(nodes).join('g')
+    .attr('cursor', d => d.url ? 'pointer' : 'grab')
+    .call(d3.drag()
+      .on('start', (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+      .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+      .on('end', (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; }))
+    .on('click', (e, d) => { if (d.url) window.location.href = d.url; });
+
+  node.append('circle')
+    .attr('r', d => d.size)
+    .attr('fill', d => d.color)
+    .attr('stroke', d => d.color)
+    .attr('stroke-width', d => d.type === 'root' ? 0 : 1.5)
+    .attr('fill-opacity', d => d.type === 'root' ? 0.15 : 0.06);
+
+  node.append('text')
+    .text(d => d.label)
+    .attr('text-anchor', 'middle').attr('dy', '0.35em')
+    .attr('font-size', d => d.type === 'root' ? '13px' : '11px')
+    .attr('font-weight', d => d.type === 'root' ? '700' : '400')
+    .attr('fill', d => d.color)
+    .attr('pointer-events', 'none');
+
+  node.on('mouseenter', function(e, d) {
+    d3.select(this).select('circle').attr('fill-opacity', 0.3);
+    link.attr('opacity', l => l.source.id === d.id || l.target.id === d.id ? 1 : 0.08);
+  }).on('mouseleave', function(e, d) {
+    d3.select(this).select('circle').attr('fill-opacity', d.type === 'root' ? 0.15 : 0.06);
+    link.attr('opacity', 0.7);
+  });
+
+  simulation.on('tick', () => {
+    link
+      .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+    node.attr('transform', d =>
+      `translate(${Math.max(d.size, Math.min(W - d.size, d.x))},${Math.max(d.size, Math.min(H - d.size, d.y))})`);
+  });
+}
+</script>
+
+<style>
+.kg-wrapper { margin: 3rem 0; }
+.kg-title { font-size: 1.4rem; margin-bottom: 0.3rem; }
+.kg-subtitle { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem; }
+#knowledge-graph svg { border-radius: 12px; width: 100%; }
+</style>

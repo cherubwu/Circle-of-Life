@@ -1,0 +1,75 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import KnowledgeGraph from '../../components/KnowledgeGraph.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog', ({ data }) => data.lang === 'en'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+<html lang="en">
+<head>
+  <BaseHead title="BioMetab Insights" description="Curated biotech insights for researchers, investors, and industry professionals." />
+</head>
+<body>
+  <Header />
+  <main>
+    <section class="hero">
+      <h1>BioMetab Insights</h1>
+      <p>Weekly curated analysis on <strong>innovative drugs · neuroscience · liver metabolism</strong>.<br/>
+      Built for researchers, pharma professionals, and investors.</p>
+      <a href="https://your-substack.substack.com" class="cta" target="_blank">Subscribe →</a>
+    </section>
+
+    <KnowledgeGraph />
+
+    <section>
+      <h2>Latest Articles</h2>
+      <ul class="post-list">
+        {posts.map(post => (
+          <li>
+            <a href={`/en/blog/${post.id}/`} class="post-title">{post.data.title}</a>
+            <span class="meta">
+              {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              {post.data.tags?.map(tag => <span class="tag">{tag}</span>)}
+            </span>
+            <p class="desc">{post.data.description}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </main>
+  <Footer />
+</body>
+</html>
+
+<style>
+.hero {
+  background: linear-gradient(135deg, #1a0d2e 0%, #0d1f2d 50%, #0d1a18 100%);
+  border: 1px solid rgba(124,58,237,0.3);
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+.hero h1 {
+  font-size: 2.8rem; margin-bottom: 1rem;
+  background: linear-gradient(135deg, #e2e8f0, #a78bfa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero p { color: var(--text-muted); margin-bottom: 2rem; font-size: 1.05rem; }
+.cta {
+  background: linear-gradient(135deg, #7c3aed, #06b6d4);
+  color: white; padding: 0.8rem 2rem; border-radius: 8px;
+  font-weight: 600; display: inline-block;
+}
+.cta:hover { opacity: 0.9; color: white; text-decoration: none; }
+
+.post-list { list-style: none; padding: 0; }
+.post-list li { padding: 1.5rem 0; border-bottom: 1px solid var(--border); }
+.post-title { font-size: 1.15rem; font-weight: 600; color: var(--text) !important; display: block; margin-bottom: 0.3rem; }
+.post-title:hover { color: var(--accent-2) !important; }
+.meta { display: block; font-size: 0.85rem; color: var(--text-muted); margin: 0.3rem 0; }
+.desc { color: var(--text-muted); margin: 0.3rem 0 0; font-size: 0.95rem; }
+</style>

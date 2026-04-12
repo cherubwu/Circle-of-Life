@@ -1,0 +1,25 @@
+---
+const { currentLang, slug } = Astro.props;
+const zhUrl = `/blog/${slug}/`;
+const enUrl = `/en/blog/${slug}/`;
+---
+<div class="lang-switch">
+  <a href={zhUrl} class={currentLang === 'zh' ? 'active' : ''}>中文</a>
+  <span>|</span>
+  <a href={enUrl} class={currentLang === 'en' ? 'active' : ''}>EN</a>
+</div>
+
+<style>
+.lang-switch {
+  text-align: right;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  color: var(--text-muted);
+}
+.lang-switch a { margin: 0 0.3rem; }
+.lang-switch a.active { 
+  color: var(--accent); 
+  font-weight: 700;
+  pointer-events: none;
+}
+</style>
