@@ -1,75 +1,40 @@
 ---
 const lang = Astro.currentLocale ?? 'zh';
-const prefix = lang === 'en' ? '/en' : '';
+const base = import.meta.env.BASE_URL;
+const prefix = lang === 'en' ? `${base}en` : base;
+const zhNav = { blog: '文章', about: '关于', subscribe: '订阅' };
+const enNav = { blog: 'Articles', about: 'About', subscribe: 'Subscribe' };
+const nav = lang === 'en' ? enNav : zhNav;
 const title = lang === 'en' ? 'Circle of Life' : '生之回环';
 ---
 <header>
   <nav>
-    <a href={`${prefix}/`} class="logo">
+    <a href={base} class="logo">
       <span class="logo-icon">🔬</span>
       <span class="logo-text">{title}</span>
     </a>
     <div class="nav-links">
-      <a href={`${prefix}/blog`}>{lang === 'en' ? 'Articles' : '文章'}</a>
-      <a href={`${prefix}/about`}>{lang === 'en' ? 'About' : '关于'}</a>
-      <a href="https://your-substack.substack.com" target="_blank">{lang === 'en' ? 'Subscribe' : '订阅'}</a>
+      <a href={`${prefix}/blog`}>{nav.blog}</a>
+      <a href={`${prefix}/about`}>{nav.about}</a>
+      <a href="https://your-substack.substack.com" target="_blank">{nav.subscribe}</a>
       <div class="lang-toggle">
-        <a href="/" class={lang === 'zh' ? 'active' : ''}>中文</a>
+        <a href={base} class={lang === 'zh' ? 'active' : ''}>中文</a>
         <span>|</span>
-        <a href="/en/" class={lang === 'en' ? 'active' : ''}>EN</a>
+        <a href={`${base}en/`} class={lang === 'en' ? 'active' : ''}>EN</a>
       </div>
     </div>
   </nav>
 </header>
 
 <style>
-header {
-  border-bottom: 1px solid var(--border);
-  padding: 1rem 2rem;
-  background: rgba(15, 15, 26, 0.95);
-  backdrop-filter: blur(10px);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-nav {
-  max-width: 800px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 700;
-  font-size: 1.05rem;
-  color: var(--text);
-  text-decoration: none;
-}
+header { border-bottom: 1px solid var(--border); padding: 1rem 2rem; background: rgba(15,15,26,0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
+nav { max-width: 800px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+.logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.05rem; color: var(--text); text-decoration: none; }
 .logo:hover { color: var(--accent-2); }
-.logo-icon { font-size: 1.2rem; }
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-.nav-links a {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  transition: color 0.2s;
-}
+.nav-links { display: flex; align-items: center; gap: 1.5rem; }
+.nav-links a { color: var(--text-muted); font-size: 0.9rem; }
 .nav-links a:hover { color: var(--accent-2); }
-.lang-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.8rem;
-  color: var(--border);
-  border-left: 1px solid var(--border);
-  padding-left: 1rem;
-}
+.lang-toggle { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; border-left: 1px solid var(--border); padding-left: 1rem; }
 .lang-toggle a { color: var(--text-muted); }
 .lang-toggle a.active { color: var(--accent-2); font-weight: 700; pointer-events: none; }
 </style>
