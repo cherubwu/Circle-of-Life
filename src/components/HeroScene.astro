@@ -1,0 +1,434 @@
+---
+import KnowledgeGraph from './KnowledgeGraph.astro';
+const lang = Astro.currentLocale ?? 'en';
+---
+
+<section class="hero-scene" id="hero-scene">
+  <canvas id="scene-canvas"></canvas>
+
+  <div class="scene-layout">
+    <!-- Left: title + girl + orbiting cells -->
+    <div class="scene-left">
+      <div class="hero-text">
+        <span class="badge">Biotech · Neuroscience · 2025</span>
+        <h1>{lang === 'zh' ? <>生之<br/>回环</> : <>Circle<br/>of Life</>}</h1>
+        <p>
+          {lang === 'zh'
+            ? '研究者视角的生命科学洞见，聚焦创新药与神经科学前沿。'
+            : 'Biotech insights from inside the lab. Innovative drugs · Neuroscience · Metabolism.'}
+        </p>
+        <a href="https://your-substack.substack.com" target="_blank" class="hero-cta">
+          {lang === 'zh' ? '订阅周刊 →' : 'Subscribe →'}
+        </a>
+      </div>
+
+      <!-- Girl figure (reference point for cell orbits) -->
+      <div class="girl-area" id="girl-area">
+        <div class="girl-glow"></div>
+        <svg class="girl-svg" viewBox="0 0 160 340" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="glow-filter">
+              <feGaussianBlur stdDeviation="4" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <radialGradient id="skin" cx="50%" cy="40%" r="60%">
+              <stop offset="0%" stop-color="#f0d8c8"/>
+              <stop offset="100%" stop-color="#d4a882"/>
+            </radialGradient>
+            <radialGradient id="hair-grad" cx="50%" cy="0%" r="80%">
+              <stop offset="0%" stop-color="#5b3a8a"/>
+              <stop offset="100%" stop-color="#2d1b5e"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Body glow aura -->
+          <ellipse cx="80" cy="170" rx="65" ry="110" fill="rgba(124,58,237,0.06)" filter="url(#glow-filter)"/>
+
+          <!-- Body / lab coat -->
+          <path d="M50,145 Q42,180 40,240 Q60,248 80,249 Q100,248 120,240 Q118,180 110,145 Q100,152 80,153 Q60,152 50,145Z"
+                fill="#1e1b4b" stroke="#a78bfa" stroke-width="1.2"/>
+          <!-- Lab coat lapels -->
+          <path d="M70,145 L77,170 L80,153 L83,170 L90,145" fill="none" stroke="#c4b5fd" stroke-width="1" opacity="0.6"/>
+
+          <!-- Skirt -->
+          <path d="M40,240 Q35,285 38,310 Q60,318 80,319 Q100,318 122,310 Q125,285 120,240Z"
+                fill="#0f0f1a" stroke="#7c3aed" stroke-width="1.3"/>
+
+          <!-- Legs -->
+          <rect x="58" y="314" width="16" height="22" rx="6" fill="#1e1b4b" stroke="#a78bfa" stroke-width="1"/>
+          <rect x="86" y="314" width="16" height="22" rx="6" fill="#1e1b4b" stroke="#a78bfa" stroke-width="1"/>
+
+          <!-- Left arm -->
+          <path d="M50,152 Q32,178 34,210 Q38,220 44,217 Q48,195 55,170" fill="#1e1b4b" stroke="#a78bfa" stroke-width="1.2"/>
+          <!-- Right arm -->
+          <path d="M110,152 Q128,178 126,210 Q122,220 116,217 Q112,195 105,170" fill="#1e1b4b" stroke="#a78bfa" stroke-width="1.2"/>
+
+          <!-- Neck -->
+          <rect x="70" y="132" width="20" height="16" rx="5" fill="url(#skin)" stroke="#a78bfa" stroke-width="0.8"/>
+
+          <!-- Head -->
+          <ellipse cx="80" cy="90" rx="38" ry="42" fill="url(#skin)" filter="url(#glow-filter)"/>
+
+          <!-- Hair - bob cut top -->
+          <path d="M42,78 Q42,28 80,22 Q118,28 118,78 Q118,50 105,36 Q80,22 55,36 Q42,50 42,78Z"
+                fill="url(#hair-grad)"/>
+          <!-- Side hair strands -->
+          <path d="M42,85 Q38,108 40,125 Q44,110 46,98Z" fill="url(#hair-grad)"/>
+          <path d="M118,85 Q122,108 120,125 Q116,110 114,98Z" fill="url(#hair-grad)"/>
+
+          <!-- Eyes -->
+          <ellipse cx="66" cy="88" rx="7" ry="8" fill="#1a0a2e"/>
+          <ellipse cx="94" cy="88" rx="7" ry="8" fill="#1a0a2e"/>
+          <!-- Iris -->
+          <ellipse cx="66" cy="89" rx="5" ry="6" fill="#4c1d95"/>
+          <ellipse cx="94" cy="89" rx="5" ry="6" fill="#4c1d95"/>
+          <!-- Pupil -->
+          <ellipse cx="66" cy="90" rx="3" ry="3.5" fill="#1a0a2e"/>
+          <ellipse cx="94" cy="90" rx="3" ry="3.5" fill="#1a0a2e"/>
+          <!-- Eye shine -->
+          <circle cx="68" cy="87" r="1.8" fill="rgba(255,255,255,0.9)"/>
+          <circle cx="96" cy="87" r="1.8" fill="rgba(255,255,255,0.9)"/>
+          <!-- Eyelashes -->
+          <path d="M59,83 Q62,80 70,82" fill="none" stroke="#2d1b5e" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M87,83 Q90,80 101,82" fill="none" stroke="#2d1b5e" stroke-width="1.5" stroke-linecap="round"/>
+
+          <!-- Blush -->
+          <ellipse cx="55" cy="100" rx="9" ry="5" fill="rgba(255,150,150,0.25)"/>
+          <ellipse cx="105" cy="100" rx="9" ry="5" fill="rgba(255,150,150,0.25)"/>
+
+          <!-- Nose -->
+          <path d="M78,100 Q80,105 82,100" fill="none" stroke="rgba(180,100,80,0.4)" stroke-width="1.2" stroke-linecap="round"/>
+
+          <!-- Mouth -->
+          <path d="M71,113 Q80,120 89,113" fill="none" stroke="#c084a0" stroke-width="1.8" stroke-linecap="round"/>
+
+          <!-- Hair band -->
+          <ellipse cx="80" cy="30" rx="12" ry="6" fill="#7c3aed" opacity="0.7"/>
+
+          <!-- Floating particles around her -->
+          <circle cx="30" cy="60" r="3" fill="#a78bfa" opacity="0.5">
+            <animate attributeName="cy" values="60;50;60" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="135" cy="80" r="2" fill="#06b6d4" opacity="0.5">
+            <animate attributeName="cy" values="80;70;80" dur="4s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="25" cy="180" r="2" fill="#10b981" opacity="0.4">
+            <animate attributeName="cx" values="25;30;25" dur="3.5s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Right: Knowledge Graph -->
+    <div class="scene-right">
+      <div class="graph-panel">
+        <KnowledgeGraph />
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+const canvas = document.getElementById('scene-canvas') as HTMLCanvasElement;
+const ctx = canvas.getContext('2d')!;
+let W = 0, H = 0;
+const mouse = { x: -9999, y: -9999 };
+
+function resize() {
+  W = canvas.width = canvas.offsetWidth;
+  H = canvas.height = canvas.offsetHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+window.addEventListener('mousemove', e => {
+  const r = canvas.getBoundingClientRect();
+  mouse.x = e.clientX - r.left;
+  mouse.y = e.clientY - r.top;
+});
+
+/* ── Stars ── */
+const stars = Array.from({ length: 280 }, () => ({
+  x: Math.random(),
+  y: Math.random(),
+  r: Math.random() * 1.4 + 0.2,
+  a: Math.random(),
+  da: (Math.random() * 0.006 + 0.001) * (Math.random() > 0.5 ? 1 : -1),
+}));
+
+/* ── Bio cells ── */
+const BIO = ['RNA','ATP','DNA','GABA','BCI','MASH','GLP-1','Tau','mTOR','BDNF','p53','IL-6','ACE2','CRISPR'];
+const COLORS = [
+  ['rgba(167,139,250,0.7)','rgba(124,58,237,0.18)'],
+  ['rgba(6,182,212,0.7)','rgba(6,182,212,0.15)'],
+  ['rgba(16,185,129,0.6)','rgba(16,185,129,0.13)'],
+  ['rgba(245,158,11,0.6)','rgba(245,158,11,0.12)'],
+  ['rgba(244,114,182,0.6)','rgba(244,114,182,0.12)'],
+];
+
+const cells = Array.from({ length: 14 }, (_, i) => ({
+  angle: (i / 14) * Math.PI * 2 + Math.random() * 0.3,
+  speed: 0.004 + Math.random() * 0.003 * (Math.random() > 0.5 ? 1 : -1),
+  orbitR: 110 + Math.random() * 70,
+  orbitRY: 0.5 + Math.random() * 0.1,
+  r: 16 + Math.random() * 16,
+  color: COLORS[i % COLORS.length],
+  label: BIO[i % BIO.length],
+  x: 0, y: 0,
+}));
+
+function getGirlCenter(): { x: number; y: number } {
+  const el = document.getElementById('girl-area');
+  if (!el) return { x: W * 0.38, y: H * 0.52 };
+  const rect = el.getBoundingClientRect();
+  const cr = canvas.getBoundingClientRect();
+  return {
+    x: rect.left + rect.width / 2 - cr.left,
+    y: rect.top + rect.height / 2 - cr.top,
+  };
+}
+
+function drawCell(cell: typeof cells[0]) {
+  const { x, y, r, color, label } = cell;
+
+  // Outer glow
+  const grd = ctx.createRadialGradient(x, y, r * 0.1, x, y, r * 1.6);
+  grd.addColorStop(0, color[1]);
+  grd.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.beginPath();
+  ctx.arc(x, y, r * 1.6, 0, Math.PI * 2);
+  ctx.fillStyle = grd;
+  ctx.fill();
+
+  // Cell body
+  const bodyGrd = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.1, x, y, r);
+  bodyGrd.addColorStop(0, color[1].replace(/[\d.]+\)$/, '0.35)'));
+  bodyGrd.addColorStop(1, color[1]);
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = bodyGrd;
+  ctx.fill();
+  ctx.strokeStyle = color[0];
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Nucleus
+  ctx.beginPath();
+  ctx.arc(x + r * 0.05, y + r * 0.05, r * 0.38, 0, Math.PI * 2);
+  ctx.fillStyle = color[0].replace(/[\d.]+\)$/, '0.45)');
+  ctx.fill();
+
+  // Label
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.font = `bold ${Math.max(8, r * 0.5)}px monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x, y);
+}
+
+function animate() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Background gradient
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#0a0a18');
+  bg.addColorStop(0.5, '#0f0f1a');
+  bg.addColorStop(1, '#0d0d20');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Stars
+  stars.forEach(s => {
+    s.a += s.da;
+    if (s.a > 1 || s.a < 0.05) s.da *= -1;
+    ctx.beginPath();
+    ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+    ctx.fill();
+  });
+
+  // Girl center nebula glow
+  const { x: gx, y: gy } = getGirlCenter();
+  const neb = ctx.createRadialGradient(gx, gy, 0, gx, gy, 220);
+  neb.addColorStop(0, 'rgba(124,58,237,0.12)');
+  neb.addColorStop(0.5, 'rgba(6,182,212,0.05)');
+  neb.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = neb;
+  ctx.fillRect(0, 0, W, H);
+
+  // Bio cells
+  cells.forEach(cell => {
+    cell.angle += cell.speed;
+    const baseX = gx + Math.cos(cell.angle) * cell.orbitR;
+    const baseY = gy + Math.sin(cell.angle) * cell.orbitR * cell.orbitRY;
+
+    // Mouse repulsion
+    const dx = baseX - mouse.x;
+    const dy = baseY - mouse.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const push = dist < 140 && dist > 0 ? ((140 - dist) / 140) * 30 : 0;
+    cell.x = baseX + (dx / dist || 0) * push;
+    cell.y = baseY + (dy / dist || 0) * push;
+
+    drawCell(cell);
+  });
+
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+</script>
+
+<style>
+.hero-scene {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 640px;
+  overflow: hidden;
+}
+
+#scene-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.scene-layout {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  height: 100%;
+  padding: 0 2rem;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+/* ─── Left panel ─── */
+.scene-left {
+  flex: 0 0 52%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-text {
+  position: absolute;
+  top: 12%;
+  left: 0;
+  z-index: 20;
+  max-width: 280px;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  border: 1px solid rgba(6,182,212,0.3);
+  padding: 0.25rem 0.8rem;
+  border-radius: 999px;
+  margin-bottom: 1rem;
+  background: rgba(6,182,212,0.05);
+}
+
+.hero-text h1 {
+  font-size: clamp(2.8rem, 5vw, 5rem);
+  line-height: 1;
+  margin: 0 0 1rem;
+  background: linear-gradient(135deg, #f1f5f9 0%, #a78bfa 55%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.hero-text p {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.7;
+  margin: 0 0 1.5rem;
+}
+
+.hero-cta {
+  display: inline-block;
+  background: linear-gradient(135deg, #7c3aed, #06b6d4);
+  color: white;
+  padding: 0.7rem 1.8rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 0 24px rgba(124,58,237,0.45);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.hero-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 36px rgba(124,58,237,0.65);
+  color: white;
+  text-decoration: none;
+}
+
+/* Girl */
+.girl-area {
+  position: relative;
+  width: 200px;
+  height: 360px;
+  margin-left: 80px;
+}
+
+.girl-glow {
+  position: absolute;
+  inset: -40px;
+  background: radial-gradient(ellipse at center, rgba(124,58,237,0.18) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+.girl-svg {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  animation: float 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 18px rgba(124,58,237,0.55));
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+/* ─── Right panel ─── */
+.scene-right {
+  flex: 0 0 46%;
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+}
+
+.graph-panel {
+  width: 100%;
+  background: rgba(15,15,26,0.5);
+  border: 1px solid rgba(45,45,78,0.7);
+  border-radius: 16px;
+  padding: 1rem 1.2rem;
+  backdrop-filter: blur(8px);
+}
+
+.graph-panel :global(.kg-wrapper) { margin: 0; }
+.graph-panel :global(.kg-title) { font-size: 1rem; }
+
+@media (max-width: 768px) {
+  .scene-layout { flex-direction: column; height: auto; padding: 2rem 1rem; }
+  .scene-right { display: none; }
+  .girl-area { margin: 0 auto; }
+  .hero-text { position: static; max-width: 100%; margin-bottom: 2rem; }
+}
+</style>
