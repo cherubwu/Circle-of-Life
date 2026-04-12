@@ -1,26 +1,26 @@
 ---
 const lang = Astro.currentLocale ?? 'zh';
-const base = import.meta.env.BASE_URL;
-const prefix = lang === 'en' ? `${base}en` : base;
 const zhNav = { blog: '文章', about: '关于', subscribe: '订阅' };
 const enNav = { blog: 'Articles', about: 'About', subscribe: 'Subscribe' };
 const nav = lang === 'en' ? enNav : zhNav;
 const title = lang === 'en' ? 'Circle of Life' : '生之回环';
+const blogPath = lang === 'en' ? '/Circle-of-Life/en/blog' : '/Circle-of-Life/blog';
+const aboutPath = lang === 'en' ? '/Circle-of-Life/en/about' : '/Circle-of-Life/about';
 ---
 <header>
   <nav>
-    <a href={base} class="logo">
+    <a href="/Circle-of-Life/" class="logo">
       <span class="logo-icon">🔬</span>
       <span class="logo-text">{title}</span>
     </a>
     <div class="nav-links">
-      <a href={`${prefix}/blog`}>{nav.blog}</a>
-      <a href={`${prefix}/about`}>{nav.about}</a>
+      <a href={blogPath}>{nav.blog}</a>
+      <a href={aboutPath}>{nav.about}</a>
       <a href="https://your-substack.substack.com" target="_blank">{nav.subscribe}</a>
       <div class="lang-toggle">
-        <a href={base} class={lang === 'zh' ? 'active' : ''}>中文</a>
+        <a href="/Circle-of-Life/" class={lang === 'zh' ? 'active' : ''}>中文</a>
         <span>|</span>
-        <a href={`${base}en/`} class={lang === 'en' ? 'active' : ''}>EN</a>
+        <a href="/Circle-of-Life/en/" class={lang === 'en' ? 'active' : ''}>EN</a>
       </div>
     </div>
   </nav>
