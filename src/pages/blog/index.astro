@@ -18,7 +18,7 @@ const posts = (await getCollection('blog', ({ data }) => data.lang === 'en'))
     <ul class="post-list">
       {posts.map(post => (
         <li>
-          <a href={`${import.meta.env.BASE_URL}blog/${post.id}/`}>{post.data.title}</a>
+          <a href={`/Circle-of-Life/blog/${post.id}/`}>{post.data.title}</a>
           <span class="meta">
             {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
             {post.data.tags?.map(tag => <span class="tag">{tag}</span>)}
