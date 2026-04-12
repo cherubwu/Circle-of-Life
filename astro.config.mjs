@@ -9,8 +9,8 @@ export default defineConfig({
   base: '/Circle-of-Life',
   integrations: [mdx(), sitemap()],
   i18n: {
-    defaultLocale: 'zh',
-    locales: ['zh', 'en'],
+    defaultLocale: 'en',
+    locales: ['en', 'zh'],
     routing: {
       prefixDefaultLocale: false
     }

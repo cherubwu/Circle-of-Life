@@ -1,11 +1,11 @@
 ---
-const lang = Astro.currentLocale ?? 'zh';
-const zhNav = { blog: '文章', about: '关于', subscribe: '订阅' };
-const enNav = { blog: 'Articles', about: 'About', subscribe: 'Subscribe' };
-const nav = lang === 'en' ? enNav : zhNav;
-const title = lang === 'en' ? 'Circle of Life' : '生之回环';
-const blogPath = lang === 'en' ? '/Circle-of-Life/en/blog' : '/Circle-of-Life/blog';
-const aboutPath = lang === 'en' ? '/Circle-of-Life/en/about' : '/Circle-of-Life/about';
+const lang = Astro.currentLocale ?? 'en';
+const nav = lang === 'zh'
+  ? { blog: '文章', about: '关于', subscribe: '订阅' }
+  : { blog: 'Articles', about: 'About', subscribe: 'Subscribe' };
+const title = lang === 'zh' ? '生之回环' : 'Circle of Life';
+const blogPath = lang === 'zh' ? '/Circle-of-Life/zh/blog' : '/Circle-of-Life/blog';
+const aboutPath = lang === 'zh' ? '/Circle-of-Life/zh/about' : '/Circle-of-Life/about';
 ---
 <header>
   <nav>
@@ -18,9 +18,9 @@ const aboutPath = lang === 'en' ? '/Circle-of-Life/en/about' : '/Circle-of-Life/
       <a href={aboutPath}>{nav.about}</a>
       <a href="https://your-substack.substack.com" target="_blank">{nav.subscribe}</a>
       <div class="lang-toggle">
-        <a href="/Circle-of-Life/" class={lang === 'zh' ? 'active' : ''}>中文</a>
+        <a href="/Circle-of-Life/" class={lang === 'en' ? 'active' : ''}>EN</a>
         <span>|</span>
-        <a href="/Circle-of-Life/en/" class={lang === 'en' ? 'active' : ''}>EN</a>
+        <a href="/Circle-of-Life/zh/" class={lang === 'zh' ? 'active' : ''}>中文</a>
       </div>
     </div>
   </nav>

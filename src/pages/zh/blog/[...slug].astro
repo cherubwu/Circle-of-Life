@@ -5,7 +5,7 @@ import Header from '../../../components/Header.astro';
 import Footer from '../../../components/Footer.astro';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog', ({ data }) => data.lang === 'en');
+  const posts = await getCollection('blog', ({ data }) => data.lang === 'zh');
   return posts.map(post => ({
     params: { slug: post.id },
     props: { post },
@@ -15,7 +15,7 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await render(post);
 ---
-<html lang="en">
+<html lang="zh">
 <head>
   <BaseHead title={post.data.title} description={post.data.description} />
 </head>
@@ -23,15 +23,10 @@ const { Content } = await render(post);
   <Header />
   <main>
     <article>
-      <div class="lang-switch">
-        <a href={`/blog/mash-pipeline-zh/`}>中文</a>
-        <span>|</span>
-        <span class="active">EN</span>
-      </div>
       <header>
         <h1>{post.data.title}</h1>
         <div class="meta">
-          {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+          {post.data.pubDate.toLocaleDateString('zh-CN')}
           {post.data.author && <span> · {post.data.author}</span>}
           <div class="tags">
             {post.data.tags?.map(tag => <span class="tag">{tag}</span>)}
@@ -48,11 +43,8 @@ const { Content } = await render(post);
 </html>
 
 <style>
-.lang-switch { text-align: right; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; }
-.lang-switch a { color: var(--accent-2); }
-.lang-switch .active { color: var(--accent-2); font-weight: 700; }
 article header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
-article h1 { font-size: 2rem; margin-bottom: 0.5rem; color: var(--text); }
+article h1 { font-size: 2rem; margin-bottom: 0.5rem; }
 .meta { color: var(--text-muted); font-size: 0.9rem; }
 .tags { margin-top: 0.5rem; }
 .content { line-height: 1.9; }
