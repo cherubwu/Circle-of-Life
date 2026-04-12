@@ -7,29 +7,24 @@ const lang = Astro.currentLocale ?? 'en';
   <canvas id="scene-canvas"></canvas>
 
   <div class="scene-layout">
-    <!-- Left: title + girl + orbiting planets -->
     <div class="scene-left">
       <div class="hero-text">
         <span class="badge">Biotech · Neuroscience · 2025</span>
         <h1>{lang === 'zh' ? <>生之<br/>回环</> : <>Circle<br/>of Life</>}</h1>
-        <p>
-          {lang === 'zh'
-            ? '研究者视角的生命科学洞见，聚焦创新药与神经科学前沿。'
-            : 'Biotech insights from inside the lab.\nInnovative drugs · Neuroscience · Metabolism.'}
-        </p>
+        <p>{lang === 'zh'
+          ? '研究者视角的生命科学洞见\n聚焦创新药与神经科学前沿'
+          : 'Biotech insights from inside the lab\nInnovative drugs · Neuroscience · Metabolism'}</p>
         <a href="https://your-substack.substack.com" target="_blank" class="hero-cta">
           {lang === 'zh' ? '订阅周刊 →' : 'Subscribe →'}
         </a>
       </div>
 
-      <!-- Girl image — canvas draws planets around this element -->
       <div class="girl-area" id="girl-area">
         <div class="girl-glow"></div>
         <img src="/Circle-of-Life/girl-mascot.jpg" class="girl-img" alt="mascot" />
       </div>
     </div>
 
-    <!-- Right: Knowledge Graph -->
     <div class="scene-right">
       <div class="graph-panel">
         <KnowledgeGraph />
@@ -57,51 +52,284 @@ window.addEventListener('mousemove', e => {
 });
 
 /* ── Stars ── */
-const stars = Array.from({ length: 300 }, () => ({
+const stars = Array.from({ length: 220 }, () => ({
   x: Math.random(), y: Math.random(),
-  r: Math.random() * 1.5 + 0.2,
+  r: Math.random() * 1.3 + 0.2,
   a: Math.random(),
-  da: (Math.random() * 0.007 + 0.001) * (Math.random() > 0.5 ? 1 : -1),
+  da: (Math.random() * 0.006 + 0.001) * (Math.random() > 0.5 ? 1 : -1),
 }));
 
-/* ── Planets ── */
-// Each planet travels on a tilted ellipse around the girl
-// Semi-major = a, semi-minor = b, tilt = angle of ellipse rotation
-const PLANET_DEFS = [
-  { label: 'GLP-1',  r: 18, top: '#f97316', bot: '#7c2d12', ring: false },
-  { label: 'BCI',    r: 14, top: '#a78bfa', bot: '#4c1d95', ring: true,  ringCol: 'rgba(167,139,250,0.55)' },
-  { label: 'MASH',   r: 16, top: '#34d399', bot: '#064e3b', ring: false },
-  { label: 'DNA',    r: 12, top: '#60a5fa', bot: '#1e3a8a', ring: false },
-  { label: 'mTOR',   r: 13, top: '#f0abfc', bot: '#701a75', ring: false },
-  { label: 'ATP',    r: 11, top: '#fde68a', bot: '#92400e', ring: false },
-  { label: 'RNA',    r: 10, top: '#6ee7b7', bot: '#065f46', ring: false },
-  { label: 'Tau',    r: 14, top: '#93c5fd', bot: '#1e40af', ring: true,  ringCol: 'rgba(147,197,253,0.5)' },
-  { label: 'BDNF',   r: 12, top: '#fb923c', bot: '#7c2d12', ring: false },
-  { label: 'CRISPR', r: 15, top: '#c084fc', bot: '#581c87', ring: true,  ringCol: 'rgba(192,132,252,0.5)' },
-  { label: 'p53',    r: 11, top: '#4ade80', bot: '#14532d', ring: false },
-  { label: 'IL-6',   r: 10, top: '#f87171', bot: '#7f1d1d', ring: false },
-];
+/* ── Organic blob helper ── */
+function drawBlob(cx: number, cy: number, r: number, pts: number, jitter: number, t: number, strokeCol: string, fillCol: string) {
+  ctx.beginPath();
+  for (let i = 0; i <= pts; i++) {
+    const angle = (i / pts) * Math.PI * 2;
+    const noise = 1 + Math.sin(angle * 3 + t) * jitter + Math.cos(angle * 5 - t * 0.7) * jitter * 0.5;
+    const x = cx + Math.cos(angle) * r * noise;
+    const y = cy + Math.sin(angle) * r * noise;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fillStyle = fillCol;
+  ctx.fill();
+  ctx.strokeStyle = strokeCol;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
 
-// Two elliptical orbits (inner + outer belt), tilted diagonally like the ref image
-const ORBITS = [
-  { a: 140, b: 55,  tilt: -0.45, speed: 0.0045, offset: 0 },      // inner belt
-  { a: 195, b: 75,  tilt: -0.38, speed: 0.0030, offset: Math.PI }, // outer belt
-];
+/* ── Molecule helper (space-fill model) ── */
+function drawMolecule(cx: number, cy: number, atoms: {dx:number,dy:number,r:number,col:string}[], t: number, label: string) {
+  const wobble = Math.sin(t) * 2;
+  // bonds first
+  for (let i = 0; i < atoms.length - 1; i++) {
+    const a = atoms[i], b = atoms[i + 1];
+    ctx.beginPath();
+    ctx.moveTo(cx + a.dx, cy + a.dy + wobble);
+    ctx.lineTo(cx + b.dx, cy + b.dy + wobble);
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+  // atoms
+  atoms.forEach(a => {
+    const grd = ctx.createRadialGradient(
+      cx + a.dx - a.r * 0.3, cy + a.dy + wobble - a.r * 0.3, 1,
+      cx + a.dx, cy + a.dy + wobble, a.r);
+    grd.addColorStop(0, 'rgba(255,255,255,0.5)');
+    grd.addColorStop(1, a.col);
+    ctx.beginPath();
+    ctx.arc(cx + a.dx, cy + a.dy + wobble, a.r, 0, Math.PI * 2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+  });
+  // label
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  ctx.font = 'bold 9px monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText(label, cx, cy + Math.max(...atoms.map(a => a.dy)) + wobble + 6);
+}
 
-const planets = PLANET_DEFS.map((def, i) => {
-  const orb = ORBITS[i % 2];
+/* ── OUTER LAYER: Cells & Organelles ── */
+type OrgObj = {
+  angle: number; speed: number; orbitA: number; orbitB: number; orbitTilt: number;
+  type: string; r: number; col1: string; col2: string; phase: number; x: number; y: number;
+};
+
+const CELL_TYPES = ['cell','rbc','mitochondria','nucleus','neuron'];
+const CELL_COLORS: Record<string, [string,string]> = {
+  cell:         ['rgba(52,211,153,0.7)', 'rgba(16,185,129,0.08)'],
+  rbc:          ['rgba(248,113,113,0.75)', 'rgba(239,68,68,0.08)'],
+  mitochondria: ['rgba(251,191,36,0.7)', 'rgba(245,158,11,0.08)'],
+  nucleus:      ['rgba(167,139,250,0.7)', 'rgba(124,58,237,0.08)'],
+  neuron:       ['rgba(147,197,253,0.65)', 'rgba(59,130,246,0.08)'],
+};
+
+const outerObjs: OrgObj[] = Array.from({ length: 10 }, (_, i) => {
+  const type = CELL_TYPES[i % CELL_TYPES.length];
+  const [c1, c2] = CELL_COLORS[type];
   return {
-    ...def,
-    orb,
-    t: (i / PLANET_DEFS.length) * Math.PI * 2 * (i % 2 === 0 ? 1 : -1),
+    angle: (i / 10) * Math.PI * 2,
+    speed: 0.0025 + (i % 3) * 0.0008,
+    orbitA: 195 + (i % 3) * 30,
+    orbitB: 80 + (i % 3) * 12,
+    orbitTilt: -0.35 + (i % 4) * 0.08,
+    type, r: 20 + (i % 3) * 8,
+    col1: c1, col2: c2,
+    phase: Math.random() * Math.PI * 2,
     x: 0, y: 0,
-    pushX: 0, pushY: 0,
   };
 });
 
+function drawOuter(o: OrgObj, t: number) {
+  const { x, y, r, col1, col2, type, phase } = o;
+  ctx.save();
+
+  if (type === 'rbc') {
+    // Red blood cell — biconcave disc with inner depression
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(1, 0.55);
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fillStyle = col2;
+    ctx.fill();
+    ctx.strokeStyle = col1;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    // Inner ring (biconcave illusion)
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.42, 0, Math.PI * 2);
+    ctx.strokeStyle = col1.replace('0.75)', '0.3)');
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+
+  } else if (type === 'mitochondria') {
+    // Elongated bean shape
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(phase + t * 0.3);
+    ctx.scale(1.8, 1);
+    drawBlob(0, 0, r * 0.7, 8, 0.12, t + phase, col1, col2);
+    // Inner cristae lines
+    for (let i = -2; i <= 2; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * r * 0.18, -r * 0.5);
+      ctx.bezierCurveTo(i * r * 0.18 + r * 0.1, 0, i * r * 0.18 - r * 0.1, 0, i * r * 0.18, r * 0.5);
+      ctx.strokeStyle = col1.replace('0.7)', '0.4)');
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    ctx.restore();
+
+  } else if (type === 'nucleus') {
+    // Double-membrane nucleus
+    drawBlob(x, y, r, 8, 0.14, t + phase, col1, col2);
+    drawBlob(x, y, r * 0.55, 6, 0.1, t * 1.3 + phase, col1.replace('0.7)', '0.9)'), col2);
+    // nucleolus
+    ctx.beginPath();
+    ctx.arc(x + r * 0.1, y - r * 0.1, r * 0.2, 0, Math.PI * 2);
+    ctx.fillStyle = col1.replace('0.7)', '0.6)');
+    ctx.fill();
+
+  } else if (type === 'neuron') {
+    // Soma + dendrites
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.6, 0, Math.PI * 2);
+    ctx.fillStyle = col2;
+    ctx.fill();
+    ctx.strokeStyle = col1;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // Axon/dendrites
+    for (let d = 0; d < 5; d++) {
+      const dAngle = (d / 5) * Math.PI * 2 + phase;
+      const len = r * (1.2 + Math.sin(t + d) * 0.3);
+      ctx.beginPath();
+      ctx.moveTo(x + Math.cos(dAngle) * r * 0.6, y + Math.sin(dAngle) * r * 0.6);
+      ctx.bezierCurveTo(
+        x + Math.cos(dAngle + 0.4) * len,
+        y + Math.sin(dAngle + 0.4) * len,
+        x + Math.cos(dAngle - 0.4) * len,
+        y + Math.sin(dAngle - 0.4) * len,
+        x + Math.cos(dAngle) * len * 1.3,
+        y + Math.sin(dAngle) * len * 1.3,
+      );
+      ctx.strokeStyle = col1.replace('0.65)', '0.45)');
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+    }
+
+  } else {
+    // Generic cell with membrane blobs
+    drawBlob(x, y, r, 9, 0.18, t + phase, col1, col2);
+    // Nucleus inside
+    ctx.beginPath();
+    ctx.arc(x + r * 0.1, y - r * 0.05, r * 0.38, 0, Math.PI * 2);
+    ctx.fillStyle = col1.replace('0.7)', '0.3)');
+    ctx.fill();
+    ctx.strokeStyle = col1.replace('0.7)', '0.5)');
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Glow
+  const grd = ctx.createRadialGradient(x, y, r * 0.5, x, y, r * 2);
+  grd.addColorStop(0, col2);
+  grd.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.globalAlpha = 0.5;
+  ctx.beginPath();
+  ctx.arc(x, y, r * 2, 0, Math.PI * 2);
+  ctx.fillStyle = grd;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  ctx.restore();
+}
+
+/* ── INNER LAYER: Molecules / Proteins ── */
+type MolObj = {
+  angle: number; speed: number; orbitA: number; orbitB: number; orbitTilt: number;
+  label: string; atoms: {dx:number,dy:number,r:number,col:string}[];
+  phase: number; x: number; y: number;
+};
+
+const MOLECULES = [
+  {
+    label: 'GLP-1',
+    atoms: [
+      {dx:-16,dy:0,r:9,col:'rgba(52,211,153,0.9)'},
+      {dx:-5,dy:-8,r:7,col:'rgba(16,185,129,0.9)'},
+      {dx:5,dy:4,r:8,col:'rgba(52,211,153,0.9)'},
+      {dx:15,dy:-3,r:6,col:'rgba(110,231,183,0.9)'},
+      {dx:22,dy:6,r:5,col:'rgba(16,185,129,0.9)'},
+    ],
+  },
+  {
+    label: 'p53',
+    atoms: [
+      {dx:-12,dy:6,r:7,col:'rgba(167,139,250,0.9)'},
+      {dx:-3,dy:-6,r:9,col:'rgba(124,58,237,0.9)'},
+      {dx:8,dy:5,r:7,col:'rgba(196,181,253,0.9)'},
+      {dx:18,dy:-2,r:6,col:'rgba(167,139,250,0.9)'},
+    ],
+  },
+  {
+    label: 'mTOR',
+    atoms: [
+      {dx:-18,dy:2,r:8,col:'rgba(251,191,36,0.9)'},
+      {dx:-7,dy:-5,r:6,col:'rgba(245,158,11,0.9)'},
+      {dx:4,dy:6,r:9,col:'rgba(251,191,36,0.9)'},
+      {dx:14,dy:-4,r:6,col:'rgba(253,230,138,0.9)'},
+      {dx:22,dy:4,r:5,col:'rgba(245,158,11,0.9)'},
+    ],
+  },
+  {
+    label: 'BDNF',
+    atoms: [
+      {dx:-14,dy:0,r:7,col:'rgba(147,197,253,0.9)'},
+      {dx:-4,dy:-7,r:8,col:'rgba(59,130,246,0.9)'},
+      {dx:7,dy:4,r:7,col:'rgba(147,197,253,0.9)'},
+      {dx:18,dy:-1,r:6,col:'rgba(96,165,250,0.9)'},
+    ],
+  },
+  {
+    label: 'Tau',
+    atoms: [
+      {dx:-20,dy:3,r:6,col:'rgba(248,113,113,0.9)'},
+      {dx:-9,dy:-5,r:8,col:'rgba(239,68,68,0.9)'},
+      {dx:3,dy:5,r:7,col:'rgba(252,165,165,0.9)'},
+      {dx:13,dy:-3,r:6,col:'rgba(248,113,113,0.9)'},
+      {dx:22,dy:5,r:5,col:'rgba(239,68,68,0.9)'},
+    ],
+  },
+  {
+    label: 'CRISPR',
+    atoms: [
+      {dx:-14,dy:4,r:8,col:'rgba(192,132,252,0.9)'},
+      {dx:-3,dy:-6,r:7,col:'rgba(168,85,247,0.9)'},
+      {dx:8,dy:5,r:9,col:'rgba(192,132,252,0.9)'},
+      {dx:20,dy:-2,r:6,col:'rgba(216,180,254,0.9)'},
+    ],
+  },
+];
+
+const innerObjs: MolObj[] = MOLECULES.map((m, i) => ({
+  angle: (i / MOLECULES.length) * Math.PI * 2,
+  speed: -(0.004 + i * 0.001),
+  orbitA: 105 + (i % 2) * 20,
+  orbitB: 45 + (i % 2) * 10,
+  orbitTilt: -0.42 + i * 0.05,
+  label: m.label,
+  atoms: m.atoms,
+  phase: Math.random() * Math.PI * 2,
+  x: 0, y: 0,
+}));
+
 function getGirlCenter() {
   const el = document.getElementById('girl-area');
-  if (!el) return { x: W * 0.42, y: H * 0.5 };
+  if (!el) return { x: W * 0.4, y: H * 0.5 };
   const rect = el.getBoundingClientRect();
   const cr = canvas.getBoundingClientRect();
   return {
@@ -110,87 +338,17 @@ function getGirlCenter() {
   };
 }
 
-function drawOrbitBelt(gx: number, gy: number) {
-  ORBITS.forEach(orb => {
-    ctx.save();
-    ctx.translate(gx, gy);
-    ctx.rotate(orb.tilt);
-    ctx.scale(1, orb.b / orb.a);
-    ctx.beginPath();
-    ctx.arc(0, 0, orb.a, 0, Math.PI * 2);
-    ctx.restore();
-    ctx.strokeStyle = 'rgba(167,139,250,0.1)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  });
-}
-
-function drawPlanet(p: typeof planets[0]) {
-  const { x, y, r, top, bot, label } = p;
-
-  // Planet body
-  const grad = ctx.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.05, x + r * 0.1, y + r * 0.1, r);
-  grad.addColorStop(0, top);
-  grad.addColorStop(1, bot);
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fillStyle = grad;
-  ctx.fill();
-
-  // Atmosphere glow
-  const atm = ctx.createRadialGradient(x, y, r * 0.8, x, y, r * 1.45);
-  atm.addColorStop(0, top.replace(')', ', 0.25)').replace('rgb', 'rgba').replace('#', 'rgba(').padEnd(10));
-  // simplified: just use a semi-transparent ring
-  ctx.beginPath();
-  ctx.arc(x, y, r * 1.3, 0, Math.PI * 2);
-  ctx.strokeStyle = top + '44';
-  ctx.lineWidth = r * 0.35;
-  ctx.globalAlpha = 0.25;
-  ctx.stroke();
-  ctx.globalAlpha = 1;
-
-  // Saturn-style ring
-  if ((p as any).ring) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(1, 0.28);
-    ctx.beginPath();
-    ctx.arc(0, 0, r * 1.85, 0, Math.PI * 2);
-    ctx.strokeStyle = (p as any).ringCol;
-    ctx.lineWidth = r * 0.55;
-    ctx.stroke();
-    // Clip center of ring (behind planet)
-    ctx.restore();
-  }
-
-  // Re-draw planet on top of ring clipping area
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fillStyle = grad;
-  ctx.fill();
-
-  // Surface highlight
-  ctx.beginPath();
-  ctx.arc(x - r * 0.28, y - r * 0.28, r * 0.45, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(255,255,255,0.18)';
-  ctx.fill();
-
-  // Label
-  ctx.fillStyle = 'rgba(255,255,255,0.92)';
-  ctx.font = `bold ${Math.max(7, r * 0.55)}px monospace`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(label, x, y + r * 0.08);
-}
+let t = 0;
 
 function animate() {
+  t += 0.012;
   ctx.clearRect(0, 0, W, H);
 
-  // Deep space background
-  const bg = ctx.createLinearGradient(0, 0, W * 0.5, H);
-  bg.addColorStop(0, '#08081a');
-  bg.addColorStop(0.6, '#0f0f1e');
-  bg.addColorStop(1, '#0a0d1f');
+  // Deep space bg
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#07071a');
+  bg.addColorStop(0.5, '#0d0d20');
+  bg.addColorStop(1, '#090914');
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
@@ -200,49 +358,68 @@ function animate() {
     if (s.a > 1 || s.a < 0.05) s.da *= -1;
     ctx.beginPath();
     ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+    ctx.fillStyle = `rgba(255,255,255,${s.a.toFixed(2)})`;
     ctx.fill();
   });
 
   const { x: gx, y: gy } = getGirlCenter();
 
-  // Nebula around girl
-  const neb = ctx.createRadialGradient(gx, gy, 0, gx, gy, 260);
-  neb.addColorStop(0, 'rgba(124,58,237,0.10)');
-  neb.addColorStop(0.4, 'rgba(6,182,212,0.05)');
+  // Nebula glow
+  const neb = ctx.createRadialGradient(gx, gy, 0, gx, gy, 280);
+  neb.addColorStop(0, 'rgba(124,58,237,0.13)');
+  neb.addColorStop(0.4, 'rgba(6,182,212,0.06)');
   neb.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = neb;
   ctx.fillRect(0, 0, W, H);
 
-  // Subtle orbit belts
-  drawOrbitBelt(gx, gy);
+  // Position function for ellipse
+  function ellipsePos(obj: {angle:number, orbitA:number, orbitB:number, orbitTilt:number}) {
+    const cos = Math.cos(obj.orbitTilt);
+    const sin = Math.sin(obj.orbitTilt);
+    const ex = Math.cos(obj.angle) * obj.orbitA;
+    const ey = Math.sin(obj.angle) * obj.orbitB;
+    return {
+      x: gx + ex * cos - ey * sin,
+      y: gy + ex * sin + ey * cos,
+    };
+  }
 
-  // Update + draw planets (back → front by y depth)
-  const sorted = [...planets].sort((a, b) => a.y - b.y);
+  // Mouse repel
+  function applyRepel(px: number, py: number) {
+    const dx = px - mouse.x;
+    const dy = py - mouse.y;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const push = dist < 120 ? ((120 - dist) / 120) * 28 : 0;
+    return { x: px + (dx / dist) * push, y: py + (dy / dist) * push };
+  }
 
-  planets.forEach(p => {
-    p.t += p.orb.speed;
-    const cos = Math.cos(p.orb.tilt);
-    const sin = Math.sin(p.orb.tilt);
-    const ex = Math.cos(p.t) * p.orb.a;
-    const ey = Math.sin(p.t) * p.orb.b;
-    const baseX = gx + ex * cos - ey * sin;
-    const baseY = gy + ex * sin + ey * cos;
-
-    // Mouse repulsion
-    const dx = baseX - mouse.x;
-    const dy = baseY - mouse.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const push = dist < 130 && dist > 1 ? ((130 - dist) / 130) * 35 : 0;
-    p.x = baseX + (dx / dist) * push;
-    p.y = baseY + (dy / dist) * push;
+  // Update positions
+  outerObjs.forEach(o => {
+    o.angle += o.speed;
+    const pos = ellipsePos(o);
+    const rep = applyRepel(pos.x, pos.y);
+    o.x = rep.x; o.y = rep.y;
+  });
+  innerObjs.forEach(m => {
+    m.angle += m.speed;
+    const pos = ellipsePos(m);
+    const rep = applyRepel(pos.x, pos.y);
+    m.x = rep.x; m.y = rep.y;
   });
 
-  // Draw back-half planets first (behind girl)
-  sorted.filter(p => p.y < gy).forEach(drawPlanet);
-  // (girl image is drawn by CSS, over canvas)
-  // Draw front-half planets (in front of girl)
-  sorted.filter(p => p.y >= gy).forEach(drawPlanet);
+  // Draw outer cells (behind girl if above center)
+  const outerBehind = outerObjs.filter(o => o.y < gy);
+  const outerFront  = outerObjs.filter(o => o.y >= gy);
+  const innerBehind = innerObjs.filter(m => m.y < gy);
+  const innerFront  = innerObjs.filter(m => m.y >= gy);
+
+  outerBehind.forEach(o => drawOuter(o, t));
+  innerBehind.forEach(m => drawMolecule(m.x, m.y, m.atoms, t + m.phase, m.label));
+
+  // (girl is CSS layer, drawn on top of canvas background)
+
+  innerFront.forEach(m => drawMolecule(m.x, m.y, m.atoms, t + m.phase, m.label));
+  outerFront.forEach(o => drawOuter(o, t));
 
   requestAnimationFrame(animate);
 }
@@ -276,9 +453,8 @@ requestAnimationFrame(animate);
   align-items: center;
 }
 
-/* ─── Left ─── */
 .scene-left {
-  flex: 0 0 55%;
+  flex: 0 0 56%;
   position: relative;
   height: 100%;
   display: flex;
@@ -288,15 +464,15 @@ requestAnimationFrame(animate);
 
 .hero-text {
   position: absolute;
-  top: 13%;
+  top: 12%;
   left: 0;
   z-index: 20;
-  max-width: 270px;
+  max-width: 260px;
 }
 
 .badge {
   display: inline-block;
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent-2);
@@ -308,7 +484,7 @@ requestAnimationFrame(animate);
 }
 
 .hero-text h1 {
-  font-size: clamp(2.8rem, 5vw, 5rem);
+  font-size: clamp(2.8rem, 5vw, 4.8rem);
   line-height: 1;
   margin: 0 0 1rem;
   background: linear-gradient(135deg, #f1f5f9 0%, #a78bfa 55%, #06b6d4 100%);
@@ -345,26 +521,25 @@ requestAnimationFrame(animate);
   text-decoration: none;
 }
 
-/* Girl image */
 .girl-area {
   position: relative;
-  width: 260px;
-  height: 260px;
-  margin-left: 60px;
+  width: 240px;
+  height: 240px;
+  margin-left: 70px;
   z-index: 15;
 }
 
 .girl-glow {
   position: absolute;
-  inset: -50px;
-  background: radial-gradient(ellipse at center, rgba(124,58,237,0.2) 0%, transparent 65%);
+  inset: -60px;
+  background: radial-gradient(ellipse at center, rgba(124,58,237,0.22) 0%, transparent 65%);
   border-radius: 50%;
   animation: pulse-glow 3.5s ease-in-out infinite;
 }
 
 @keyframes pulse-glow {
   0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.06); }
+  50% { opacity: 1; transform: scale(1.07); }
 }
 
 .girl-img {
@@ -372,38 +547,37 @@ requestAnimationFrame(animate);
   height: 100%;
   object-fit: contain;
   border-radius: 50%;
-  animation: float 4.5s ease-in-out infinite;
-  filter: drop-shadow(0 0 22px rgba(124,58,237,0.6));
+  animation: float 5s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(124,58,237,0.55)) brightness(1.05);
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-14px); }
+  50% { transform: translateY(-12px); }
 }
 
-/* ─── Right ─── */
 .scene-right {
-  flex: 0 0 43%;
+  flex: 0 0 42%;
   display: flex;
   align-items: center;
 }
 
 .graph-panel {
   width: 100%;
-  background: rgba(10,10,25,0.6);
-  border: 1px solid rgba(45,45,78,0.8);
+  background: rgba(10,10,25,0.55);
+  border: 1px solid rgba(45,45,78,0.75);
   border-radius: 16px;
   padding: 1rem 1.2rem;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0 30px rgba(124,58,237,0.08);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 30px rgba(124,58,237,0.07);
 }
 
 .graph-panel :global(.kg-wrapper) { margin: 0; }
 .graph-panel :global(.kg-title) { font-size: 1rem; }
 
 @media (max-width: 900px) {
-  .scene-layout { flex-direction: column; height: auto; padding: 2rem 1.5rem; gap: 2rem; }
-  .scene-left { height: auto; min-height: 500px; }
+  .scene-layout { flex-direction: column; height: auto; padding: 5rem 1.5rem 2rem; gap: 2rem; }
+  .scene-left { height: auto; min-height: 460px; width: 100%; }
   .scene-right { width: 100%; }
   .hero-text { position: static; max-width: 100%; margin-bottom: 1.5rem; }
   .girl-area { margin: 0 auto; }
