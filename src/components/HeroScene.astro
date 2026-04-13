@@ -2,434 +2,326 @@
 const lang = Astro.currentLocale ?? 'en';
 const base = '/Circle-of-Life';
 
-const headline   = lang === 'zh' ? ['探索', '生命', '科学的', '边界。'] : ['EXPLORE', 'THE INNER', 'BIOLOGY', 'OF LIFE.'];
-const eyebrow    = lang === 'zh' ? '— 生物科技 · 神经科学 · 2025' : '— BIOTECH · NEUROSCIENCE · 2025';
-const floatLabel = lang === 'zh' ? 'ORGANIC STRUCTURES 有机结构' : 'ORGANIC STRUCTURES';
-const ctaText    = lang === 'zh' ? '订阅周刊 →' : 'SUBSCRIBE →';
+const headline = lang === 'zh'
+  ? ['探索', '生命', '内部。']
+  : ['INSIDE', 'THE', 'BODY.'];
 
-const features = lang === 'zh'
+const cards = lang === 'zh'
   ? [
-      { title:'神经科学', sub:'脑机接口 · 阿尔茨海默 · 神经调控', href:`${base}/blog`, color:'#1d8a78', pattern:'neural'   },
-      { title:'代谢',     sub:'MASH · GLP-1 · 线粒体 · 胰岛素',   href:`${base}/blog`, color:'#f2c532', pattern:'lung'     },
-      { title:'免疫学',   sub:'CAR-T · 检查点 · 自身免疫 · 衰老',  href:`${base}/blog`, color:'#d91882', pattern:'intestine'},
+      { title:'神经科学', sub:'脑科学 · 认知 · 神经调控', btn:'探索 →', color:'#EF5B5B', img:`${base}/organs/brain.jpg`,  href:`${base}/blog` },
+      { title:'代谢系统', sub:'MASH · GLP-1 · 线粒体',   btn:'探索 →', color:'#F7E623', img:`${base}/organs/liver.jpg`,  href:`${base}/blog` },
+      { title:'免疫循环', sub:'CAR-T · 免疫检查点',       btn:'探索 →', color:'#3D50B3', img:`${base}/organs/heart.jpg`, href:`${base}/blog` },
     ]
   : [
-      { title:'NEUROSCIENCE', sub:"BCI · Alzheimer's · Parkinson's",  href:`${base}/blog`, color:'#1d8a78', pattern:'neural'   },
-      { title:'METABOLISM',   sub:'MASH · GLP-1 · Lipid · Insulin',   href:`${base}/blog`, color:'#f2c532', pattern:'lung'     },
-      { title:'IMMUNOLOGY',   sub:'CAR-T · Checkpoint · Autoimmune',   href:`${base}/blog`, color:'#d91882', pattern:'intestine'},
+      { title:'NEUROSCIENCE', sub:"BCI · Alzheimer's · Neuromod", btn:'DISCOVER →', color:'#EF5B5B', img:`${base}/organs/brain.jpg`,  href:`${base}/blog` },
+      { title:'METABOLISM',   sub:'MASH · GLP-1 · Mitochondria',  btn:'DISCOVER →', color:'#F7E623', img:`${base}/organs/liver.jpg`,  href:`${base}/blog` },
+      { title:'IMMUNOLOGY',   sub:'CAR-T · Checkpoint · Aging',   btn:'DISCOVER →', color:'#3D50B3', img:`${base}/organs/heart.jpg`, href:`${base}/blog` },
     ];
 ---
 
 <section class="bio-hero">
-  <canvas id="bio-canvas" aria-hidden="true"></canvas>
+  <div class="bio-grid">
 
-  <div class="bio-headline">
-    <span class="bio-eyebrow">{eyebrow}</span>
-    <h1>{headline.map(line => <>{line}<br/></>)}</h1>
-    <a href="https://your-substack.substack.com" target="_blank" class="bio-cta">{ctaText}</a>
+    <!-- Left: big headline -->
+    <div class="bio-left">
+      <span class="bio-eyebrow">
+        {lang === 'zh' ? '— 生物科技 · 神经科学 · 2025' : '— BIOTECH · NEUROSCIENCE · 2025'}
+      </span>
+      <h1>{headline.map(l => <>{l}<br/></>)}</h1>
+      <a href="https://your-substack.substack.com" target="_blank" class="bio-cta">
+        {lang === 'zh' ? '订阅周刊 →' : 'SUBSCRIBE →'}
+      </a>
+    </div>
+
+    <!-- Right: floating organ illustration -->
+    <div class="bio-visual">
+      <!-- Yellow background slab -->
+      <div class="bio-slab slab-yellow"></div>
+      <!-- Pink/magenta accent slab -->
+      <div class="bio-slab slab-pink"></div>
+      <!-- Teal slab -->
+      <div class="bio-slab slab-teal"></div>
+
+      <!-- Floating organs -->
+      <img src={`${base}/organs/digest.jpg`}  alt="Digestive system" class="organ organ-digest"  />
+      <img src={`${base}/organs/brain.jpg`}   alt="Brain"            class="organ organ-brain"   />
+      <img src={`${base}/organs/kidney.jpg`}  alt="Kidney"           class="organ organ-kidney"  />
+      <img src={`${base}/organs/liver.jpg`}   alt="Liver"            class="organ organ-liver"   />
+
+      <!-- Floating label -->
+      <span class="float-label">
+        {lang === 'zh' ? 'ORGANIC STRUCTURES 有机结构' : 'ORGANIC STRUCTURES'}
+      </span>
+    </div>
+
   </div>
 
-  <div class="bio-float-label">{floatLabel}</div>
-
-  <div class="bio-strip">
-    {features.map(f => (
-      <a href={f.href} class="bio-feat" style={`--fc:${f.color}`}>
-        <div class="bio-feat-icon" data-pattern={f.pattern}></div>
-        <div class="bio-feat-body">
-          <strong class="bio-feat-title">{f.title}</strong>
-          <span class="bio-feat-sub">{f.sub}</span>
-          <span class="bio-learn">{lang === 'zh' ? '探索 →' : 'LEARN MORE →'}</span>
+  <!-- Card grid -->
+  <div class="bio-cards">
+    {cards.map(c => (
+      <a href={c.href} class="bio-card" style={`--cc:${c.color}`}>
+        <div class="card-visual" style={`background:${c.color}`}>
+          <img src={c.img} alt={c.title} />
+        </div>
+        <div class="card-body">
+          <h3>{c.title}</h3>
+          <p>{c.sub}</p>
+          <span class="card-btn">{c.btn}</span>
         </div>
       </a>
     ))}
   </div>
 </section>
 
-<script define:vars={{ lang, base }}>
-const canvas = document.getElementById('bio-canvas');
-const ctx = canvas.getContext('2d');
-let W = 0, H = 0;
-
-/* ── Biological texture helpers ── */
-
-// Brain coral: grid of small arcs
-function drawCoral(x1, y1, x2, y2) {
-  const step = 22;
-  ctx.lineWidth = 1.8;
-  ctx.strokeStyle = 'rgba(8,42,35,0.22)';
-  for (let gy = y1; gy < y2; gy += step) {
-    for (let gx = x1; gx < x2; gx += step) {
-      const phase = Math.sin(gx * 0.09 + gy * 0.07) * Math.PI;
-      const r2 = step * 0.3;
-      ctx.beginPath();
-      ctx.arc(gx, gy, r2, phase, phase + Math.PI);
-      ctx.stroke();
-    }
-  }
-}
-
-// Lung branching tree
-function drawBranch(x, y, angle, len, depth) {
-  if (depth <= 0 || len < 2) return;
-  const ex = x + Math.cos(angle) * len;
-  const ey = y + Math.sin(angle) * len;
-  ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(ex, ey);
-  ctx.strokeStyle = `rgba(90,55,0,${0.35 + depth * 0.07})`;
-  ctx.lineWidth = Math.max(0.5, depth * 0.65);
-  ctx.lineCap = 'round'; ctx.stroke();
-  const spread = 0.36 + (6 - depth) * 0.03;
-  drawBranch(ex, ey, angle - spread, len * 0.68, depth - 1);
-  drawBranch(ex, ey, angle + spread, len * 0.68, depth - 1);
-}
-
-function drawLungs(cx, cy, size) {
-  // Trachea
-  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy + size * 0.28);
-  ctx.strokeStyle = 'rgba(90,55,0,0.75)'; ctx.lineWidth = 3.5;
-  ctx.lineCap = 'round'; ctx.stroke();
-  drawBranch(cx, cy + size * 0.28, -Math.PI/2 - 0.45, size * 0.44, 5);
-  drawBranch(cx, cy + size * 0.28, -Math.PI/2 + 0.45, size * 0.44, 5);
-}
-
-// Intestinal coil
-function drawIntestines(cx, cy, r) {
-  const pts = [];
-  for (let i = 0; i < 26; i++) {
-    const wind = i * 0.52;
-    const amp  = r * (0.12 + (i % 5) * 0.065);
-    pts.push({
-      x: cx + Math.cos(wind) * amp * 1.5,
-      y: cy - r * 0.38 + Math.sin(wind * 0.65) * amp + i * r * 0.031,
-    });
-  }
-  // White outer tube
-  ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
-  for (let i = 1; i < pts.length - 1; i++) {
-    const mx = (pts[i].x + pts[i+1].x) / 2;
-    const my = (pts[i].y + pts[i+1].y) / 2;
-    ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
-  }
-  ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 15;
-  ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
-  ctx.strokeStyle = 'rgba(160,0,90,0.4)'; ctx.lineWidth = 9; ctx.stroke();
-}
-
-// Topographic contour rings
-function drawTopographic(cx, cy, r) {
-  for (let i = 1; i <= 5; i++) {
-    const rr = r * (i / 5.5);
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, rr * 1.1, rr * 0.65, -0.18, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(100,220,170,${0.45 - i * 0.06})`;
-    ctx.lineWidth = 1; ctx.stroke();
-  }
-}
-
-// Small icon canvas drawings for the feature strip icons
-function drawFeatureIcon(canvasEl, pattern, color) {
-  const fc = canvasEl.getContext('2d');
-  const sz = canvasEl.width;
-  fc.clearRect(0, 0, sz, sz);
-  // Background circle
-  fc.beginPath(); fc.arc(sz/2, sz/2, sz/2 - 2, 0, Math.PI*2);
-  fc.fillStyle = color; fc.fill();
-  fc.save(); fc.beginPath(); fc.arc(sz/2, sz/2, sz/2 - 2, 0, Math.PI*2); fc.clip();
-  if (pattern === 'neural') {
-    // Simple node network
-    const nodes = [[sz*0.5,sz*0.25],[sz*0.25,sz*0.55],[sz*0.5,sz*0.7],[sz*0.75,sz*0.55],[sz*0.5,sz*0.5]];
-    const links = [[0,4],[1,4],[2,4],[3,4],[0,1],[2,3]];
-    fc.strokeStyle='rgba(255,255,255,0.6)'; fc.lineWidth=1;
-    links.forEach(([a,b]) => { fc.beginPath(); fc.moveTo(nodes[a][0],nodes[a][1]); fc.lineTo(nodes[b][0],nodes[b][1]); fc.stroke(); });
-    nodes.forEach(([nx,ny],i) => { fc.beginPath(); fc.arc(nx,ny,i===4?5:3.5,0,Math.PI*2); fc.fillStyle='rgba(255,255,255,0.9)'; fc.fill(); });
-  } else if (pattern === 'lung') {
-    fc.strokeStyle='rgba(100,65,0,0.7)'; fc.lineWidth=1.5; fc.lineCap='round';
-    function fb(x,y,a,l,d) { if(d<=0||l<1)return; const ex=x+Math.cos(a)*l, ey=y+Math.sin(a)*l; fc.beginPath();fc.moveTo(x,y);fc.lineTo(ex,ey);fc.stroke(); fb(ex,ey,a-0.42,l*0.68,d-1); fb(ex,ey,a+0.42,l*0.68,d-1); }
-    fc.lineWidth=2; fc.beginPath(); fc.moveTo(sz/2,sz*0.18); fc.lineTo(sz/2,sz*0.36); fc.stroke();
-    fb(sz/2,sz*0.36,-Math.PI/2-0.45,sz*0.22,4); fb(sz/2,sz*0.36,-Math.PI/2+0.45,sz*0.22,4);
-  } else {
-    // Intestine rings
-    const pts2=[];
-    for(let i=0;i<16;i++){const w=i*0.55,a=sz*(0.08+(i%4)*0.04);pts2.push({x:sz/2+Math.cos(w)*a*1.3,y:sz/2-sz*0.2+Math.sin(w*0.6)*a+i*sz*0.027});}
-    fc.beginPath(); fc.moveTo(pts2[0].x,pts2[0].y);
-    for(let i=1;i<pts2.length-1;i++){const mx=(pts2[i].x+pts2[i+1].x)/2,my=(pts2[i].y+pts2[i+1].y)/2;fc.quadraticCurveTo(pts2[i].x,pts2[i].y,mx,my);}
-    fc.strokeStyle='rgba(255,255,255,0.5)'; fc.lineWidth=8; fc.lineCap='round'; fc.stroke();
-    fc.strokeStyle='rgba(160,0,90,0.4)'; fc.lineWidth=4; fc.stroke();
-  }
-  fc.restore();
-}
-
-/* ── Main scene draw ── */
-function drawScene() {
-  ctx.clearRect(0, 0, W, H);
-
-  // Cream background
-  ctx.fillStyle = '#f5f4ef';
-  ctx.fillRect(0, 0, W, H);
-
-  // ── Teal organic blob (top-right) ──
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(W * 0.40, 0);
-  ctx.bezierCurveTo(W * 0.62, -H * 0.04, W * 1.08, H * 0.06, W, H * 0.38);
-  ctx.bezierCurveTo(W * 1.06, H * 0.64, W * 0.78, H * 0.80, W * 0.58, H * 0.73);
-  ctx.bezierCurveTo(W * 0.42, H * 0.67, W * 0.34, H * 0.52, W * 0.38, H * 0.30);
-  ctx.bezierCurveTo(W * 0.38, H * 0.13, W * 0.36, H * 0.04, W * 0.40, 0);
-  ctx.closePath();
-  ctx.fillStyle = '#1d8a78';
-  ctx.fill();
-  ctx.clip();
-  drawCoral(W * 0.35, -10, W + 10, H * 0.82);
-  ctx.restore();
-
-  // ── Yellow vertical rectangle ──
-  const yr = { x: W * 0.51, y: H * 0.10, w: W * 0.16, h: H * 0.54 };
-  ctx.save();
-  ctx.fillStyle = '#f2c532';
-  ctx.fillRect(yr.x, yr.y, yr.w, yr.h);
-  ctx.rect(yr.x, yr.y, yr.w, yr.h);
-  ctx.clip();
-  drawLungs(yr.x + yr.w * 0.5, yr.y + yr.h * 0.15, H * 0.20);
-  ctx.restore();
-
-  // ── Magenta blob (far right) ──
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(W * 0.72, H * 0.18);
-  ctx.bezierCurveTo(W * 0.88, H * 0.10, W * 1.06, H * 0.22, W, H * 0.46);
-  ctx.bezierCurveTo(W * 1.07, H * 0.68, W * 0.88, H * 0.82, W * 0.72, H * 0.73);
-  ctx.bezierCurveTo(W * 0.60, H * 0.66, W * 0.62, H * 0.40, W * 0.72, H * 0.18);
-  ctx.closePath();
-  ctx.fillStyle = '#d91882';
-  ctx.fill();
-  ctx.clip();
-  drawIntestines(W * 0.83, H * 0.46, H * 0.24);
-  ctx.restore();
-
-  // ── Small dark teal accent circle ──
-  ctx.save();
-  ctx.beginPath(); ctx.arc(W * 0.44, H * 0.47, H * 0.07, 0, Math.PI * 2);
-  ctx.fillStyle = '#1a4a3a'; ctx.fill();
-  ctx.clip();
-  drawTopographic(W * 0.44, H * 0.47, H * 0.07);
-  ctx.restore();
-
-  // Small red dot accent
-  ctx.beginPath(); ctx.arc(W * 0.485, H * 0.155, H * 0.024, 0, Math.PI * 2);
-  ctx.fillStyle = '#d93018'; ctx.fill();
-
-  // Small yellow circle accent (lower left of teal)
-  ctx.beginPath(); ctx.arc(W * 0.40, H * 0.66, H * 0.03, 0, Math.PI * 2);
-  ctx.fillStyle = '#f2c532'; ctx.fill();
-
-  // ── Dark feature strip bg ──
-  const stripTop = H * 0.80;
-  ctx.fillStyle = '#111128';
-  ctx.fillRect(0, stripTop, W, H - stripTop);
-
-  // Vertical dividers in strip
-  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-  ctx.lineWidth = 1;
-  [1/3, 2/3].forEach(frac => {
-    ctx.beginPath(); ctx.moveTo(W * frac, stripTop); ctx.lineTo(W * frac, H); ctx.stroke();
-  });
-}
-
-/* ── Resize & init ── */
-function resize() {
-  W = canvas.width  = canvas.offsetWidth;
-  H = canvas.height = canvas.offsetHeight;
-  drawScene();
-}
-window.addEventListener('resize', resize);
-
-/* ── Feature-strip icon canvases ── */
-function initIconCanvases() {
-  document.querySelectorAll('.bio-feat-icon').forEach(el => {
-    const pattern = el.dataset.pattern;
-    const feat = el.closest('.bio-feat');
-    const color = getComputedStyle(feat).getPropertyValue('--fc').trim();
-    const c = document.createElement('canvas');
-    c.width = c.height = 60;
-    c.style.cssText = 'width:60px;height:60px;border-radius:50%;flex-shrink:0;';
-    el.appendChild(c);
-    drawFeatureIcon(c, pattern, color);
-  });
-}
-
-resize();
-initIconCanvases();
-</script>
-
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&display=swap');
 
 .bio-hero {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  min-height: 640px;
+  background: #F2EFE6;
+  padding: 0 4vw 0;
   overflow: hidden;
-  background: #f5f4ef;
 }
 
-#bio-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
+/* ── 2-column grid ── */
+.bio-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 4vw;
+  align-items: center;
+  min-height: calc(100vh - 220px);
+  padding-top: 2rem;
 }
 
-/* ── Left headline block ── */
-.bio-headline {
-  position: absolute;
-  z-index: 10;
-  top: 50%;
-  left: 4%;
-  transform: translateY(-62%);
+/* ── Left panel ── */
+.bio-left {
   display: flex;
   flex-direction: column;
   gap: 0;
-  max-width: 340px;
+  z-index: 2;
 }
 
 .bio-eyebrow {
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.58rem;
-  letter-spacing: 0.2em;
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(17,17,40,0.5);
-  margin-bottom: 1rem;
-  display: block;
+  color: rgba(0,0,0,0.42);
+  margin-bottom: 1.2rem;
 }
 
-.bio-headline h1 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(3.6rem, 6.5vw, 5.8rem);
-  line-height: 0.90;
-  color: #111128;
-  margin: 0 0 1.6rem;
-  letter-spacing: 0.02em;
+.bio-left h1 {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: clamp(4.5rem, 9vw, 8rem);
+  line-height: 0.85;
+  text-transform: uppercase;
+  color: #000;
+  margin: 0 0 2.4rem;
 }
 
 .bio-cta {
   display: inline-block;
-  background: #111128;
-  color: #f5f4ef;
-  padding: 0.65rem 1.6rem;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  background: #000;
+  color: #F2EFE6;
+  padding: 0.75rem 2rem;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
   text-decoration: none;
   width: fit-content;
-  transition: background 0.15s, color 0.15s;
+  box-shadow: 6px 6px 0 #E61E8D;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
 .bio-cta:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 9px 9px 0 #E61E8D;
+  color: #F2EFE6;
+  text-decoration: none;
+}
+
+/* ── Right: illustration collage ── */
+.bio-visual {
+  position: relative;
+  height: clamp(420px, 56vh, 620px);
+  z-index: 1;
+}
+
+/* Coloured background slabs */
+.bio-slab {
+  position: absolute;
+  border-radius: 2px;
+}
+.slab-yellow {
+  background: #F7E623;
+  width: 48%;
+  height: 72%;
+  top: 8%;
+  right: 0;
+}
+.slab-pink {
+  background: #E61E8D;
+  width: 22%;
+  height: 38%;
+  top: 5%;
+  right: 44%;
+  clip-path: polygon(0 0, 100% 8%, 90% 100%, 10% 92%);
+}
+.slab-teal {
   background: #1d8a78;
-  color: #fff;
-}
-
-/* ── Floating illustration label ── */
-.bio-float-label {
-  position: absolute;
-  z-index: 10;
-  top: 13%;
-  left: 53%;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.55rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.7);
-  pointer-events: none;
-}
-.bio-float-label::before {
-  content: '';
-  display: inline-block;
-  width: 18px;
-  height: 1px;
-  background: rgba(255,255,255,0.5);
-  vertical-align: middle;
-  margin-right: 0.5rem;
-}
-
-/* ── Feature strip ── */
-.bio-strip {
-  position: absolute;
-  z-index: 10;
+  width: 55%;
+  height: 58%;
   bottom: 0;
   left: 0;
-  right: 0;
-  height: 20%;
+  clip-path: polygon(0 12%, 100% 0, 100% 100%, 0 100%);
+}
+
+/* Floating organs */
+.organ {
+  position: absolute;
+  object-fit: contain;
+  filter: drop-shadow(6px 6px 0 rgba(0,0,0,0.12));
+}
+.organ-digest {
+  height: 68%;
+  left: 8%;
+  top: -4%;
+  z-index: 4;
+  animation: float-slow 7s ease-in-out infinite;
+}
+.organ-brain {
+  height: 44%;
+  right: 4%;
+  top: 4%;
+  z-index: 5;
+  animation: float-slow 5s 1s ease-in-out infinite;
+}
+.organ-kidney {
+  height: 32%;
+  right: 2%;
+  bottom: 6%;
+  z-index: 3;
+  animation: breathe 6s 0.5s ease-in-out infinite;
+}
+.organ-liver {
+  height: 30%;
+  left: 20%;
+  bottom: 4%;
+  z-index: 4;
+  animation: breathe 8s 2s ease-in-out infinite;
+}
+
+.float-label {
+  position: absolute;
+  top: 8%;
+  left: 44%;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.5rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.5);
+  z-index: 10;
+  pointer-events: none;
+}
+.float-label::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 1px;
+  background: rgba(0,0,0,0.4);
+  vertical-align: middle;
+  margin-right: 0.4rem;
+}
+
+/* ── Card grid ── */
+.bio-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  padding: 60px 0 64px;
 }
 
-.bio-feat {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.2rem 1.6rem;
+.bio-card {
+  background: #fff;
+  border: 3.5px solid #000;
   text-decoration: none;
-  border-top: 3px solid var(--fc);
-  background: rgba(17,17,40,0.92);
-  transition: background 0.18s;
-  overflow: hidden;
-}
-.bio-feat:hover {
-  background: rgba(28,28,55,0.98);
-}
-.bio-feat + .bio-feat {
-  border-left: 1px solid rgba(255,255,255,0.07);
-}
-
-.bio-feat-icon {
-  flex-shrink: 0;
-  width: 60px;
-  height: 60px;
-}
-
-.bio-feat-body {
+  box-shadow: 10px 10px 0 #000;
+  transition: transform 0.15s, box-shadow 0.15s;
   display: flex;
   flex-direction: column;
-  gap: 0.18rem;
-  min-width: 0;
+}
+.bio-card:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 14px 14px 0 #000;
 }
 
-.bio-feat-title {
+.card-visual {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-bottom: 3px solid #000;
+}
+.card-visual img {
+  max-height: 82%;
+  max-width: 82%;
+  object-fit: contain;
+  filter: drop-shadow(3px 3px 0 rgba(0,0,0,0.15));
+  transition: transform 0.25s;
+}
+.bio-card:hover .card-visual img {
+  transform: scale(1.06) translateY(-4px);
+}
+
+.card-body {
+  padding: 1.2rem 1.4rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.card-body h3 {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #000;
+  margin: 0;
+}
+.card-body p {
   font-family: 'DM Sans', sans-serif;
   font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #f5f4ef;
+  color: rgba(0,0,0,0.5);
+  margin: 0;
+  line-height: 1.5;
+}
+.card-btn {
+  margin-top: 0.8rem;
+  display: inline-block;
+  background: var(--cc);
+  border: 2.5px solid #000;
+  padding: 0.5rem 1rem;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 0.7rem;
+  color: #000;
+  box-shadow: 4px 4px 0 #000;
+  width: fit-content;
+  letter-spacing: 0.05em;
 }
 
-.bio-feat-sub {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.62rem;
-  color: rgba(245,244,239,0.45);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* ── Animations ── */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-18px) rotate(1deg); }
 }
-
-.bio-learn {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.58rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--fc);
-  margin-top: 0.2rem;
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.05); }
 }
 
 /* ── Responsive ── */
-@media (max-width: 700px) {
-  .bio-headline { left: 1.5rem; max-width: 260px; transform: translateY(-70%); }
-  .bio-headline h1 { font-size: 3rem; }
-  .bio-strip { grid-template-columns: 1fr; height: auto; position: relative; bottom: auto; }
-  .bio-hero { height: auto; min-height: 100svh; }
+@media (max-width: 780px) {
+  .bio-grid { grid-template-columns: 1fr; min-height: auto; }
+  .bio-visual { height: 320px; }
+  .bio-left h1 { font-size: 4rem; }
+  .bio-cards { grid-template-columns: 1fr; }
 }
 </style>
