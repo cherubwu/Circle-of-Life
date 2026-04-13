@@ -57,10 +57,6 @@ const cards = lang === 'zh'
       <img src={`${base}/organs/heart.jpg`}   alt="Heart"            class="organ organ-kidney"  />
       <img src={`${base}/organs/liver.jpg`}   alt="Liver"            class="organ organ-liver"   />
 
-      <!-- Floating label -->
-      <span class="float-label">
-        {lang === 'zh' ? 'ORGANIC STRUCTURES 有机结构' : 'ORGANIC STRUCTURES'}
-      </span>
     </div>
 
   </div>
@@ -231,27 +227,6 @@ const cards = lang === 'zh'
   animation: breathe 8s 2s ease-in-out infinite;
 }
 
-.float-label {
-  position: absolute;
-  top: 8%;
-  left: 44%;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.5rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: rgba(0,0,0,0.5);
-  z-index: 10;
-  pointer-events: none;
-}
-.float-label::before {
-  content: '';
-  display: inline-block;
-  width: 14px;
-  height: 1px;
-  background: rgba(0,0,0,0.4);
-  vertical-align: middle;
-  margin-right: 0.4rem;
-}
 
 /* ── Card grid ── */
 .bio-cards {
