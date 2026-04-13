@@ -13,29 +13,29 @@ import Footer from '../components/Footer.astro';
     <h1>About Circle of Life</h1>
     <p>
       Half my life is mirrored in the River Cam; the other half is pinned to a lab whiteboard
-      bristling with <mark class="yellow">untested hypotheses</mark>.
-      Having turned a <span class="red-box">Cambridge PhD</span> into a lifestyle,
-      I've found that clinical trial data reads better than most novels.
+      bristling with <mark class="hl-yellow">untested hypotheses</mark>.
+      Having turned a <span class="hl-red">Cambridge PhD</span> into a lifestyle,
+      I've found that <mark class="hl-yellow">clinical trial data</mark> reads better than most novels.
       I'm still here — mostly because the questions remain far more seductive than the answers.
     </p>
     <p>
       Circle of Life exists because I found existing biotech content either too shallow
-      or too fragmented — no platform offered <em>expert-level analysis</em> from
+      or too fragmented — no platform offered <mark class="hl-yellow">expert-level analysis</mark> from
       someone inside the lab, with multidisciplinary insights in both Chinese and English.
     </p>
 
     <h2>What I Cover</h2>
     <ul>
-      <li>🫀 <strong>Metabolic & Liver Disease</strong>: MASH/MASLD, GLP-1 applications, novel targets</li>
-      <li>🧠 <strong>Neuroscience</strong>: Brain-computer interfaces, neurodegeneration, neuromodulation</li>
-      <li>💊 <strong>Drug Pipelines</strong>: FDA decisions, clinical data readouts, industry dynamics</li>
-      <li>🔬 <strong>Longevity Biology</strong>: Senolytics, epigenetic reprogramming, aging clocks</li>
+      <li>🫀 <strong>Metabolic & Liver Disease</strong>: <span class="hl-red">MASH/MASLD</span>, GLP-1 applications, novel targets</li>
+      <li>🧠 <strong>Neuroscience</strong>: <span class="hl-red">Brain-computer interfaces</span>, neurodegeneration, neuromodulation</li>
+      <li>💊 <strong>Drug Pipelines</strong>: FDA decisions, <mark class="hl-yellow">clinical data readouts</mark>, industry dynamics</li>
+      <li>🔬 <strong>Longevity Biology</strong>: Senolytics, <mark class="hl-yellow">epigenetic reprogramming</mark>, aging clocks</li>
     </ul>
 
     <h2>My Philosophy</h2>
     <p>
-      Hot topics have many interpreters. My edge is a <strong>researcher's skepticism</strong>:
-      I'll tell you when a "breakthrough" is overhyped, which targets are undervalued,
+      Hot topics have many interpreters. My edge is a <span class="hl-red">researcher's skepticism</span>:
+      I'll tell you when a "breakthrough" is <mark class="hl-yellow">overhyped</mark>, which targets are undervalued,
       and what the data actually says versus what the press release claims.
     </p>
 
@@ -54,22 +54,21 @@ h1 { margin-bottom: 1.5rem; }
 ul { padding-left: 1.2rem; }
 ul li { margin-bottom: 0.6rem; }
 
-mark.yellow {
+mark.hl-yellow {
   background: #F7E623;
   color: #000;
   padding: 0 0.15em;
   font-style: normal;
 }
 
-.red-box {
-  display: inline-block;
+.hl-red {
   background: transparent;
   color: #000;
   border: 2.5px solid #EF5B5B;
   box-shadow: 3px 3px 0 #EF5B5B;
   padding: 0 0.35em;
   font-family: 'Archivo Black', sans-serif;
-  font-size: 0.95em;
+  font-size: 0.9em;
   letter-spacing: 0.02em;
   transform: rotate(-0.8deg);
   display: inline-block;

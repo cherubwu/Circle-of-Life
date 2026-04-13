@@ -12,21 +12,21 @@ import Footer from '../../components/Footer.astro';
   <main>
     <h1>关于生之回环</h1>
     <p>
-      我的一半生命留在了康河的倒影里，另一半锁在了实验室那块写满<mark class="yellow">变量</mark>的白板上。
-      在剑桥把 <span class="red-box">PhD</span> 读成一种生活方式后，
-      我发现读临床数据竟然比看小说更让我上瘾。
+      我的一半生命留在了康河的倒影里，另一半锁在了实验室那块写满<mark class="hl-yellow">变量</mark>的白板上。
+      在剑桥把 <span class="hl-red">PhD</span> 读成一种生活方式后，
+      我发现读<mark class="hl-yellow">临床数据</mark>竟然比看小说更让我上瘾。
       至今还没离开，大概是因为这里的科学问题比答案更迷人。
     </p>
     <p>
       创办「生之回环」的初衷，是因为我发现现有的生物科技内容要么太浅、要么太分散——
-      缺少一个能以<em>研究者视角</em>做出专业判断的中英文双语平台。
+      缺少一个能以<mark class="hl-yellow">研究者视角</mark>做出专业判断的中英文双语平台。
     </p>
     <h2>我关注什么</h2>
     <ul>
-      <li>🫀 <strong>代谢与肝脏疾病</strong>：MASH/MASLD、GLP-1应用、新型靶点研发</li>
-      <li>🧠 <strong>脑神经科学</strong>：脑机接口、神经退行性疾病、神经调控</li>
-      <li>💊 <strong>创新药管线</strong>：FDA动态、临床数据解读、产业逻辑</li>
-      <li>🔬 <strong>长寿与衰老生物学</strong>：Senolytics、重编程、衰老时钟</li>
+      <li>🫀 <strong>代谢与肝脏疾病</strong>：<span class="hl-red">MASH/MASLD</span>、GLP-1应用、新型靶点研发</li>
+      <li>🧠 <strong>脑神经科学</strong>：<span class="hl-red">脑机接口</span>、神经退行性疾病、神经调控</li>
+      <li>💊 <strong>创新药管线</strong>：FDA动态、<mark class="hl-yellow">临床数据解读</mark>、产业逻辑</li>
+      <li>🔬 <strong>长寿与衰老生物学</strong>：Senolytics、<mark class="hl-yellow">表观遗传重编程</mark>、衰老时钟</li>
     </ul>
     <h2>联系我</h2>
     <p>欢迎通过 <a href="mailto:cherubholmes@gmail.com">邮件</a> 联系我，欢迎合作、投稿与读者提问。</p>
@@ -40,21 +40,21 @@ h1 { margin-bottom: 1.5rem; }
 ul { padding-left: 1.2rem; }
 ul li { margin-bottom: 0.6rem; }
 
-mark.yellow {
+mark.hl-yellow {
   background: #F7E623;
   color: #000;
   padding: 0 0.15em;
   font-style: normal;
 }
 
-.red-box {
+.hl-red {
   background: transparent;
   color: #000;
   border: 2.5px solid #EF5B5B;
   box-shadow: 3px 3px 0 #EF5B5B;
   padding: 0 0.35em;
   font-family: 'Archivo Black', sans-serif;
-  font-size: 0.95em;
+  font-size: 0.9em;
   letter-spacing: 0.02em;
   transform: rotate(-0.8deg);
   display: inline-block;

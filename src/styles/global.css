@@ -28,6 +28,17 @@
 
 * { box-sizing: border-box; }
 
+/* Twemoji inline sizing */
+img.emoji {
+  height: 1.1em;
+  width: 1.1em;
+  margin: 0 0.05em 0 0.1em;
+  vertical-align: -0.15em;
+  display: inline;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 body {
   margin: 0;
   background: var(--cream);

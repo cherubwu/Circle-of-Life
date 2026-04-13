@@ -52,3 +52,15 @@ const { title, description, image = FallbackImage } = Astro.props;
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image.src, Astro.url)} />
+
+<!-- Twemoji (cross-platform emoji) -->
+<script src="https://cdn.jsdelivr.net/npm/@twemoji/api@15.1.0/dist/twemoji.min.js" crossorigin="anonymous" is:inline></script>
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    twemoji.parse(document.body, {
+      folder: 'svg',
+      ext: '.svg',
+      base: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/'
+    });
+  });
+</script>
