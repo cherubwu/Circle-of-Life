@@ -30,16 +30,16 @@ const ctx = canvas.getContext('2d');
 let W = 0, H = 0;
 let t = 0;
 
-/* ── Mouse / regi.it-style cursor ── */
+/* ── Mouse / butterfly cursor ── */
 const mouse = { x: -9999, y: -9999 };
-const ring = { x: -9999, y: -9999 };
-let ringReady = false;
+const bfly = { x: -9999, y: -9999 }; // lagged body position
+let bflyReady = false;
 
 function onMouseMove(e) {
   const r = canvas.getBoundingClientRect();
   mouse.x = e.clientX - r.left;
   mouse.y = e.clientY - r.top;
-  if (!ringReady) { ring.x = mouse.x; ring.y = mouse.y; ringReady = true; }
+  if (!bflyReady) { bfly.x = mouse.x; bfly.y = mouse.y; bflyReady = true; }
 }
 window.addEventListener('mousemove', onMouseMove);
 
@@ -52,29 +52,29 @@ window.addEventListener('resize', resize);
 
 /* ── Knowledge graph data ── */
 const KG_NODES = [
-  // Root gems — large faceted crystals
-  { id: 'metabolism', label: lang === 'zh' ? '代谢' : 'Metabolism',    color: '#a8e840', r: 32, sides: 6, url: null,   type: 'root', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'neuro',      label: lang === 'zh' ? '脑科学' : 'Neuroscience', color: '#50a8f0', r: 32, sides: 8, url: null,   type: 'root', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'immune',     label: lang === 'zh' ? '免疫' : 'Immunology',     color: '#c060e8', r: 32, sides: 5, url: null,   type: 'root', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  // Root flowers — pink / purple / blue
+  { id: 'immune',     label: lang==='zh'?'免疫':'Immunology',    color:'#f472b6', centerColor:'#fbbf24', r:38, petals:6, url:null,   type:'root', bloom:0, bloomTarget:0, x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'neuro',      label: lang==='zh'?'脑科学':'Neuroscience', color:'#a78bfa', centerColor:'#fcd34d', r:38, petals:5, url:null,   type:'root', bloom:0, bloomTarget:0, x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'metabolism', label: lang==='zh'?'代谢':'Metabolism',     color:'#60a5fa', centerColor:'#fb923c', r:38, petals:7, url:null,   type:'root', bloom:0, bloomTarget:0, x:0,y:0,vx:0,vy:0,fx:null,fy:null },
 
-  // Metabolism leaves — diamond / kite shapes
-  { id: 'mash',     label: 'MASH/MASLD',  color: '#90d840', r: 20, sides: 4, url: `${base}/blog/mash-pipeline-en/`, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'glp1',     label: 'GLP-1',        color: '#90d840', r: 18, sides: 4, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'lipid',    label: lang==='zh'?'脂质':'Lipid',        color: '#70c030', r: 16, sides: 6, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'insulin',  label: lang==='zh'?'胰岛素':'Insulin',    color: '#70c030', r: 16, sides: 4, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'mito',     label: lang==='zh'?'线粒体':'Mitochondria',color: '#50b020', r: 16, sides: 3, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  // Bees — immune hive
+  { id: 'cart',       label:'CAR-T',                               color:'#f9a8d4', r:13, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'checkpoint', label: lang==='zh'?'检查点':'Checkpoint',    color:'#f472b6', r:12, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'autoimmune', label: lang==='zh'?'自身免疫':'Autoimmune',  color:'#ec4899', r:11, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'senescence', label: lang==='zh'?'衰老':'Senescence',      color:'#f9a8d4', r:11, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
 
-  // Neuro leaves — crystal / triangular
-  { id: 'bci',       label: 'BCI',           color: '#40a0e8', r: 20, sides: 3, url: `${base}/blog/bci-future-en/`, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'alzheimer', label: "Alzheimer's",   color: '#40a0e8', r: 16, sides: 4, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'parkinson', label: "Parkinson's",   color: '#2880c0', r: 16, sides: 6, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'neuromod',  label: lang==='zh'?'神经调控':'Neuromod', color: '#2880c0', r: 15, sides: 4, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  // Bees — neuro hive
+  { id: 'bci',        label:'BCI',                                  color:'#c4b5fd', r:14, url:`${base}/blog/bci-future-en/`, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'alzheimer',  label:"Alzheimer's",                          color:'#a78bfa', r:12, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'parkinson',  label:"Parkinson's",                          color:'#8b5cf6', r:11, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'neuromod',   label: lang==='zh'?'神经调控':'Neuromod',     color:'#c4b5fd', r:10, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
 
-  // Immune leaves — hexagonal / octagonal
-  { id: 'cart',       label: 'CAR-T',          color: '#e060c8', r: 18, sides: 6, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'checkpoint', label: lang==='zh'?'检查点':'Checkpoint', color: '#c05890', r: 15, sides: 4, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'autoimmune', label: lang==='zh'?'自身免疫':'Autoimmune',color: '#b060e0', r: 15, sides: 8, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'senescence', label: lang==='zh'?'衰老':'Senescence',   color: '#9050c8', r: 15, sides: 3, url: null, type: 'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  // Bees — metabolism hive
+  { id: 'mash',       label:'MASH/MASLD',                           color:'#93c5fd', r:13, url:`${base}/blog/mash-pipeline-en/`, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'glp1',       label:'GLP-1',                                color:'#60a5fa', r:12, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'lipid',      label: lang==='zh'?'脂质':'Lipid',            color:'#3b82f6', r:11, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'insulin',    label: lang==='zh'?'胰岛素':'Insulin',        color:'#93c5fd', r:10, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
+  { id: 'mito',       label: lang==='zh'?'线粒体':'Mitochondria',   color:'#60a5fa', r:10, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
 ];
 
 const KG_LINKS = [
@@ -87,41 +87,14 @@ const KG_LINKS = [
 
 const nodeMap = Object.fromEntries(KG_NODES.map(n => [n.id, n]));
 
-/* ── Pre-compute per-node shape data ── */
+/* ── Per-node randomness ── */
 KG_NODES.forEach(n => {
-  // Wobbly outline points (used for non-root cells)
-  const pts = 10;
-  n.wpts = Array.from({ length: pts }, (_, i) => ({
-    angle: (i / pts) * Math.PI * 2 + (Math.random() - 0.5) * 0.28,
-    rf: 1 + (Math.random() - 0.5) * 0.18,
-  }));
-  // Surface bumps (protrusions on cell surface)
-  const numBumps = n.type === 'root' ? 14 : Math.floor(6 + Math.random()*5);
-  n.bumps = Array.from({ length: numBumps }, () => ({
-    angle: Math.random() * Math.PI * 2,
-    dist: 0.72 + Math.random() * 0.22,
-    size: 0.09 + Math.random() * 0.11,
-  }));
-  // Per-node phase offset for organic drift
   n.phase = Math.random() * Math.PI * 2;
+  // Bees get a random wing-beat offset
+  n.wingPhase = Math.random() * Math.PI * 2;
+  // Bees get a random wander offset
+  n.wanderAngle = Math.random() * Math.PI * 2;
 });
-
-/* ── Star field ── */
-const STARS = Array.from({ length: 220 }, () => ({
-  x: Math.random(), y: Math.random(),
-  r: 0.3 + Math.random() * 1.4,
-  alpha: 0.25 + Math.random() * 0.75,
-  twinkle: Math.random() * Math.PI * 2,
-  tSpeed: 0.008 + Math.random() * 0.025,
-}));
-
-/* ── Nebula clouds ── */
-const NEBULAS = [
-  { x: 0.22, y: 0.42, r: 320, rgb: [90, 50, 200] },
-  { x: 0.72, y: 0.52, r: 380, rgb: [30, 70, 210] },
-  { x: 0.48, y: 0.18, r: 220, rgb: [180, 40, 130] },
-  { x: 0.12, y: 0.75, r: 200, rgb: [30, 150, 180] },
-];
 
 function initKGPositions() {
   const cx = W * 0.62, cy = H * 0.5;
@@ -197,6 +170,20 @@ canvas.addEventListener('mousemove', e => {
 
 canvas.addEventListener('mouseup', e => {
   if (dragging) { dragging.fx = null; dragging.fy = null; dragging = null; }
+});
+
+/* ── Bloom on click for root flowers ── */
+canvas.addEventListener('click', e => {
+  const r2 = canvas.getBoundingClientRect();
+  const px = e.clientX - r2.left, py = e.clientY - r2.top;
+  for (const n of KG_NODES) {
+    if (n.type !== 'root') continue;
+    const dx = px - n.x, dy = py - n.y;
+    if (dx*dx + dy*dy < (n.r + 14)**2) {
+      n.bloomTarget = n.bloomTarget > 0.5 ? 0 : 1;
+      return; // don't navigate
+    }
+  }
 });
 
 canvas.addEventListener('click', e => {
@@ -279,7 +266,186 @@ function wobblyPath(cx, cy, r, wpts) {
   ctx.closePath();
 }
 
-/* ── Draw premium glass-orb node ── */
+/* ── Draw cute cartoon flower (root node) ── */
+function drawFlower(n) {
+  const isHov = n === hoveredNode || n === dragging;
+  const bob = Math.sin(t * 0.8 + n.phase) * 3;
+  const cx = n.x, cy = n.y + bob;
+  const r = n.r;
+  const petals = n.petals || 6;
+
+  // Animate bloom value toward target
+  n.bloom += (n.bloomTarget - n.bloom) * 0.07;
+
+  const petalR = r * (0.72 + n.bloom * 0.45); // petals open outward
+  const petalSize = r * (0.58 + n.bloom * 0.22);
+  const [rr,gg,bb] = hexToRgb(n.color);
+
+  // Soft shadow under flower
+  const shadow = ctx.createRadialGradient(cx, cy + r * 0.7, 0, cx, cy + r * 0.7, r * 1.2);
+  shadow.addColorStop(0, 'rgba(0,0,0,0.08)');
+  shadow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.beginPath(); ctx.ellipse(cx, cy + r * 0.8, r * 1.1, r * 0.4, 0, 0, Math.PI*2);
+  ctx.fillStyle = shadow; ctx.fill();
+
+  // Petals
+  for (let i = 0; i < petals; i++) {
+    const angle = (i / petals) * Math.PI * 2 + n.phase * 0.3 + t * 0.04;
+    const px = cx + Math.cos(angle) * petalR;
+    const py = cy + Math.sin(angle) * petalR;
+    // Petal gradient: lighter toward tip
+    const pg = ctx.createRadialGradient(px, py, 0, cx, cy, petalR + petalSize);
+    pg.addColorStop(0, `rgba(${Math.min(255,rr+55)},${Math.min(255,gg+55)},${Math.min(255,bb+50)},0.92)`);
+    pg.addColorStop(1, `rgba(${rr},${gg},${bb},0.72)`);
+    ctx.beginPath();
+    ctx.ellipse(px, py, petalSize * 0.52, petalSize * 0.78, angle, 0, Math.PI*2);
+    ctx.fillStyle = pg; ctx.fill();
+    // Petal outline
+    ctx.strokeStyle = `rgba(${Math.max(0,rr-30)},${Math.max(0,gg-30)},${Math.max(0,bb-25)},0.5)`;
+    ctx.lineWidth = 0.8; ctx.stroke();
+  }
+
+  // Centre disk
+  const diskR = r * (0.38 + n.bloom * 0.06);
+  const cg = ctx.createRadialGradient(cx - diskR*0.28, cy - diskR*0.28, 0, cx, cy, diskR);
+  const [cr,cgn,cblu] = hexToRgb(n.centerColor);
+  cg.addColorStop(0, `rgba(${Math.min(255,cr+60)},${Math.min(255,cgn+60)},${Math.min(255,cblu+40)},1)`);
+  cg.addColorStop(1, `rgba(${Math.max(0,cr-20)},${Math.max(0,cgn-20)},${Math.max(0,cblu-10)},1)`);
+  ctx.beginPath(); ctx.arc(cx, cy, diskR, 0, Math.PI*2);
+  ctx.fillStyle = cg; ctx.fill();
+  ctx.strokeStyle = `rgba(${Math.max(0,cr-40)},${Math.max(0,cgn-40)},0,0.6)`;
+  ctx.lineWidth = 1; ctx.stroke();
+
+  // Centre dots (seed texture)
+  for (let d = 0; d < 7; d++) {
+    const da = (d / 7) * Math.PI * 2;
+    const dr = diskR * 0.48;
+    ctx.beginPath(); ctx.arc(cx + Math.cos(da)*dr, cy + Math.sin(da)*dr, diskR*0.08, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(${Math.max(0,cr-60)},${Math.max(0,cgn-60)},0,0.55)`; ctx.fill();
+  }
+
+  // Hover glow ring
+  if (isHov) {
+    ctx.beginPath(); ctx.arc(cx, cy, r + 12 + Math.sin(t*3)*3, 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(${rr},${gg},${bb},0.35)`;
+    ctx.lineWidth = 2; ctx.setLineDash([4,6]); ctx.stroke(); ctx.setLineDash([]);
+  }
+
+  // Label
+  const fSize = 11;
+  ctx.font = `600 ${fSize}px 'DM Sans', sans-serif`;
+  const lw = ctx.measureText(n.label).width;
+  const lx = cx, ly = cy + r + 18;
+  ctx.fillStyle = `rgba(${rr},${gg},${bb},0.95)`;
+  ctx.beginPath(); ctx.roundRect(lx - lw/2 - 8, ly - fSize/2 - 4, lw+16, fSize+8, 3); ctx.fill();
+  const lum = rr*0.299 + gg*0.587 + bb*0.114;
+  ctx.fillStyle = lum > 170 ? '#2d1a5e' : '#fff';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(n.label, lx, ly);
+
+  // Bloom hint: small "click me" sparkle when not bloomed
+  if (n.bloom < 0.05 && !isHov) {
+    ctx.beginPath(); ctx.arc(cx + r*0.7, cy - r*0.7, 4, 0, Math.PI*2);
+    ctx.fillStyle = '#fbbf24'; ctx.fill();
+  }
+}
+
+/* ── Draw cute cartoon bee (leaf node) ── */
+function drawBee(n) {
+  const isHov = n === hoveredNode || n === dragging;
+  // Gentle bob + wander
+  const bob = Math.sin(t * 2.2 + n.phase) * 3;
+  const cx = n.x, cy = n.y + bob;
+  const r = n.r;
+
+  // Wing flutter angle
+  const wFlap = Math.sin(t * 8 + n.wingPhase) * 0.45;
+  const [rr,gg,bb] = hexToRgb(n.color);
+
+  // Wings (translucent, flutter up/down)
+  const wingW = r * 1.25, wingH = r * 0.75;
+  ctx.save();
+  ctx.translate(cx, cy - r * 0.1);
+  // Left upper wing
+  ctx.save(); ctx.rotate(-0.4 + wFlap);
+  ctx.beginPath(); ctx.ellipse(-r * 0.55, -r * 0.5, wingW * 0.7, wingH, -0.4, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(200,230,255,0.68)';
+  ctx.strokeStyle = 'rgba(150,180,230,0.6)'; ctx.lineWidth = 0.8;
+  ctx.fill(); ctx.stroke(); ctx.restore();
+  // Right upper wing
+  ctx.save(); ctx.rotate(0.4 - wFlap);
+  ctx.beginPath(); ctx.ellipse(r * 0.55, -r * 0.5, wingW * 0.7, wingH, 0.4, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(200,230,255,0.68)';
+  ctx.strokeStyle = 'rgba(150,180,230,0.6)'; ctx.lineWidth = 0.8;
+  ctx.fill(); ctx.stroke(); ctx.restore();
+  ctx.restore();
+
+  // Body (rounded rectangle — bee abdomen)
+  const bodyGrad = ctx.createLinearGradient(cx, cy - r*0.7, cx, cy + r*0.7);
+  bodyGrad.addColorStop(0, `rgba(${Math.min(255,rr+60)},${Math.min(255,gg+60)},${Math.min(255,bb+50)},1)`);
+  bodyGrad.addColorStop(0.5, n.color);
+  bodyGrad.addColorStop(1, `rgba(${Math.max(0,rr-40)},${Math.max(0,gg-40)},${Math.max(0,bb-30)},1)`);
+  ctx.beginPath(); ctx.ellipse(cx, cy, r*0.55, r*0.8, 0, 0, Math.PI*2);
+  ctx.fillStyle = bodyGrad; ctx.fill();
+  ctx.strokeStyle = `rgba(${Math.max(0,rr-50)},${Math.max(0,gg-50)},${Math.max(0,bb-40)},0.7)`;
+  ctx.lineWidth = 1; ctx.stroke();
+
+  // Stripes
+  for (let s = 0; s < 3; s++) {
+    const sy = cy - r*0.35 + s * r*0.35;
+    ctx.beginPath(); ctx.moveTo(cx - r*0.5, sy); ctx.lineTo(cx + r*0.5, sy);
+    ctx.strokeStyle = `rgba(${Math.max(0,rr-80)},${Math.max(0,gg-80)},${Math.max(0,bb-70)},0.35)`;
+    ctx.lineWidth = 1.5; ctx.stroke();
+  }
+
+  // Head
+  ctx.beginPath(); ctx.arc(cx, cy - r*0.72, r*0.34, 0, Math.PI*2);
+  ctx.fillStyle = `rgba(${Math.max(0,rr-30)},${Math.max(0,gg-30)},${Math.max(0,bb-20)},1)`;
+  ctx.fill();
+
+  // Antennae
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - r);
+    ctx.quadraticCurveTo(cx + side*r*0.4, cy - r*1.3, cx + side*r*0.55, cy - r*1.5);
+    ctx.strokeStyle = `rgba(${Math.max(0,rr-50)},${Math.max(0,gg-50)},${Math.max(0,bb-40)},0.8)`;
+    ctx.lineWidth = 0.9; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx + side*r*0.55, cy - r*1.5, r*0.1, 0, Math.PI*2);
+    ctx.fillStyle = '#fbbf24'; ctx.fill();
+  }
+
+  // Stinger
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + r*0.8);
+  ctx.lineTo(cx - r*0.08, cy + r*1.05);
+  ctx.lineTo(cx + r*0.08, cy + r*1.05);
+  ctx.closePath();
+  ctx.fillStyle = `rgba(${Math.max(0,rr-50)},${Math.max(0,gg-50)},${Math.max(0,bb-40)},0.8)`;
+  ctx.fill();
+
+  // URL indicator
+  if (n.url) {
+    ctx.beginPath(); ctx.arc(cx + r*0.8, cy - r*0.8, 3.5, 0, Math.PI*2);
+    ctx.fillStyle = isHov ? '#fff' : '#fbbf24'; ctx.fill();
+  }
+
+  // Hover label
+  if (isHov) {
+    const label = n.url ? `${n.label} →` : n.label;
+    const fSize = 10;
+    ctx.font = `500 ${fSize}px 'DM Sans', sans-serif`;
+    const lw = ctx.measureText(label).width;
+    const lx = cx, ly = cy - r - 18;
+    ctx.fillStyle = `rgba(${rr},${gg},${bb},0.9)`;
+    ctx.beginPath(); ctx.roundRect(lx-lw/2-8, ly-fSize/2-4, lw+16, fSize+8, 3); ctx.fill();
+    const lum = rr*0.299 + gg*0.587 + bb*0.114;
+    ctx.fillStyle = lum > 170 ? '#2d1a5e' : '#fff';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(label, lx, ly);
+  }
+}
+
+/* ── Draw premium glass-orb node (kept as fallback) ── */
 function drawGem(n) {
   const isHov = n === hoveredNode;
   const isDrag = n === dragging;
@@ -370,25 +536,79 @@ function drawGem(n) {
   }
 }
 
-/* ── Draw regi.it-style cursor ── */
-function drawCursor() {
-  if (!ringReady) return;
-  // Lerp ring toward mouse
-  ring.x += (mouse.x - ring.x) * 0.10;
-  ring.y += (mouse.y - ring.y) * 0.10;
+/* ── Draw butterfly cursor ── */
+function drawButterfly() {
+  if (!bflyReady) return;
+  bfly.x += (mouse.x - bfly.x) * 0.12;
+  bfly.y += (mouse.y - bfly.y) * 0.12;
 
+  const cx = bfly.x, cy = bfly.y;
   const isOver = hoveredNode !== null;
+  const scale = isOver ? 1.25 : 1;
+  const flutter = Math.sin(t * 9) * 0.5 + 0.5; // 0→1, wing open/close
 
-  // Outer ring (lagged, scales up on hover)
-  const ringR = isOver ? 28 + Math.sin(t * 4) * 2 : 20;
-  ctx.beginPath(); ctx.arc(ring.x, ring.y, ringR, 0, Math.PI*2);
-  ctx.strokeStyle = isOver ? 'rgba(69,113,234,0.7)' : 'rgba(40,20,100,0.38)';
-  ctx.lineWidth = isOver ? 1.8 : 1.2; ctx.stroke();
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(scale, scale);
 
-  // Inner precision dot
-  ctx.beginPath(); ctx.arc(mouse.x, mouse.y, isOver ? 4 : 3, 0, Math.PI*2);
-  ctx.fillStyle = isOver ? '#4571ea' : 'rgba(40,20,100,0.7)';
-  ctx.fill();
+  const upperW = 16, upperH = 13;
+  const lowerW = 12, lowerH = 10;
+  const spread = 0.5 + flutter * 0.5; // wings close when flutter low
+
+  // Upper wings
+  for (const side of [-1, 1]) {
+    ctx.save();
+    ctx.scale(side * spread, 1);
+    // Outer upper wing shape
+    ctx.beginPath();
+    ctx.moveTo(0, -2);
+    ctx.bezierCurveTo(upperW*0.3, -upperH, upperW, -upperH*0.8, upperW, 2);
+    ctx.bezierCurveTo(upperW*0.4, upperH*0.3, upperW*0.1, upperH*0.1, 0, 2);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(167,139,250,0.82)';
+    ctx.strokeStyle = 'rgba(109,40,217,0.55)'; ctx.lineWidth = 0.8;
+    ctx.fill(); ctx.stroke();
+    // Wing highlight
+    ctx.beginPath();
+    ctx.bezierCurveTo(upperW*0.35, -upperH*0.7, upperW*0.65, -upperH*0.5, upperW*0.55, 0);
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.restore();
+  }
+
+  // Lower wings
+  for (const side of [-1, 1]) {
+    ctx.save();
+    ctx.scale(side * spread * 0.9, 1);
+    ctx.beginPath();
+    ctx.moveTo(0, 2);
+    ctx.bezierCurveTo(lowerW*0.5, -lowerH*0.1, lowerW, lowerH*0.6, lowerW*0.5, lowerH);
+    ctx.bezierCurveTo(lowerW*0.2, lowerH*1.1, 0, lowerH*0.5, 0, 4);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(139,92,246,0.75)';
+    ctx.strokeStyle = 'rgba(109,40,217,0.5)'; ctx.lineWidth = 0.7;
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+
+  // Body (golden, like the reference image)
+  const bodyGrad = ctx.createLinearGradient(0, -10, 0, 10);
+  bodyGrad.addColorStop(0, '#fde68a');
+  bodyGrad.addColorStop(1, '#d97706');
+  ctx.beginPath(); ctx.ellipse(0, 0, 2.5, 11, 0, 0, Math.PI*2);
+  ctx.fillStyle = bodyGrad; ctx.fill();
+  ctx.strokeStyle = '#92400e'; ctx.lineWidth = 0.6; ctx.stroke();
+
+  // Antennae
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(side * 1.5, -9);
+    ctx.quadraticCurveTo(side * 6, -18, side * 8, -20);
+    ctx.strokeStyle = '#d97706'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.beginPath(); ctx.arc(side * 8, -20, 2, 0, Math.PI*2);
+    ctx.fillStyle = '#fde68a'; ctx.fill();
+  }
+
+  ctx.restore();
 }
 
 /* ── Main loop ── */
@@ -436,7 +656,7 @@ function animate() {
     const sy=sig.s.y+(sig.t2.y-sig.s.y)*sig.progress;
     ctx.beginPath(); ctx.arc(sx,sy,4,0,Math.PI*2);
     ctx.fillStyle=sig.s.color; ctx.fill();
-    ctx.strokeStyle='#0c0820'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=1; ctx.stroke();
   }
 
   // Divider
@@ -444,11 +664,12 @@ function animate() {
   ctx.strokeStyle='rgba(100,80,200,0.2)'; ctx.lineWidth=1;
   ctx.setLineDash([3,12]); ctx.stroke(); ctx.setLineDash([]);
 
-  // Gemstone nodes
-  KG_NODES.forEach(n => drawGem(n));
-
-  // regi.it cursor on top
-  drawCursor();
+  // Draw flowers (root) then bees (leaf) then butterfly
+  KG_NODES.forEach(n => {
+    if (n.type === 'root') drawFlower(n);
+    else drawBee(n);
+  });
+  drawButterfly();
 
   requestAnimationFrame(animate);
 }
