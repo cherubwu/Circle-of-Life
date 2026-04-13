@@ -3,12 +3,6 @@ import BaseHead from '../../components/BaseHead.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import HeroScene from '../../components/HeroScene.astro';
-const base = '/Circle-of-Life';
-const CATS = [
-  { label: '神经科学', sub: '脑机接口 · 认知 · 神经调控', color: '#EF5B5B', href: `${base}/zh/blog/neuroscience/` },
-  { label: '代谢',     sub: 'MASH · GLP-1 · 肝脏 · 胰岛素', color: '#F7E623', href: `${base}/zh/blog/metabolism/`   },
-  { label: '免疫学',   sub: 'CAR-T · 检查点 · 衰老',         color: '#3D50B3', href: `${base}/zh/blog/immunology/`  },
-];
 ---
 <html lang="zh">
 <head>
@@ -17,85 +11,6 @@ const CATS = [
 <body>
   <Header />
   <HeroScene />
-  <main>
-
-    <section class="cat-grid">
-      {CATS.map(cat => (
-        <a href={cat.href} class="cat-card" style={`--cc:${cat.color}`}>
-          <div class="cat-card-top" style={`border-top: 5px solid ${cat.color}`}>
-            <span class="cat-card-label">{cat.label}</span>
-            <span class="cat-card-sub">{cat.sub}</span>
-          </div>
-          <span class="cat-card-cta">查看文章 →</span>
-        </a>
-      ))}
-    </section>
-
-  </main>
   <Footer />
 </body>
 </html>
-
-<style>
-/* ── Category cards ── */
-.cat-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0;
-  border: 2.5px solid #000;
-  box-shadow: 8px 8px 0 #000;
-  margin-bottom: 3rem;
-}
-.cat-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 0;
-  text-decoration: none;
-  border-right: 2px solid #000;
-  background: #fff;
-  transition: background 0.15s;
-  min-height: 180px;
-}
-.cat-card:last-child { border-right: none; }
-.cat-card:hover { background: #000; }
-.cat-card:hover .cat-card-label,
-.cat-card:hover .cat-card-sub,
-.cat-card:hover .cat-card-cta { color: #F2EFE6 !important; }
-
-.cat-card-top {
-  padding: 1.4rem 1.6rem 1rem;
-  flex: 1;
-}
-.cat-card-label {
-  font-family: 'Archivo Black', sans-serif;
-  font-size: 1rem;
-  letter-spacing: 0.06em;
-  color: #000;
-  display: block;
-  margin-bottom: 0.5rem;
-}
-.cat-card-sub {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.72rem;
-  color: rgba(0,0,0,0.52);
-  line-height: 1.5;
-}
-.cat-card-cta {
-  display: block;
-  padding: 0.9rem 1.6rem;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: var(--cc);
-  border-top: 1px solid rgba(0,0,0,0.1);
-  transition: color 0.15s;
-}
-
-@media (max-width: 680px) {
-  .cat-grid { grid-template-columns: 1fr; }
-  .cat-card { border-right: none; border-bottom: 2px solid #000; min-height: auto; }
-  .cat-card:last-child { border-bottom: none; }
-}
-</style>
