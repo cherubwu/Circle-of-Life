@@ -14,6 +14,7 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+const dateStr = post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 ---
 <html lang="en">
 <head>
@@ -23,15 +24,20 @@ const { Content } = await render(post);
   <Header />
   <main>
     <article>
-      <header>
-        <h1>{post.data.title}</h1>
-        <div class="meta">
-          {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-          {post.data.author && <span> · {post.data.author}</span>}
-          <div class="tags">
-            {post.data.tags?.map(tag => <span class="tag">{tag}</span>)}
-          </div>
+      <header class="article-header">
+        <div class="article-meta-top">
+          <span class="article-date">{dateStr}</span>
+          {post.data.author && <span class="article-author"> — {post.data.author}</span>}
         </div>
+        <h1>{post.data.title}</h1>
+        {post.data.tags?.length > 0 && (
+          <div class="article-tags">
+            {post.data.tags.map(tag => <span class="tag">{tag}</span>)}
+          </div>
+        )}
+        {post.data.description && (
+          <p class="article-desc">{post.data.description}</p>
+        )}
       </header>
       <div class="content">
         <Content />
@@ -43,10 +49,50 @@ const { Content } = await render(post);
 </html>
 
 <style>
-article header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
-article h1 { font-size: 2rem; margin-bottom: 0.5rem; color: var(--text); }
-.meta { color: var(--text-muted); font-size: 0.9rem; }
-.tags { margin-top: 0.5rem; }
+.article-header {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 3px solid #000;
+}
+
+.article-meta-top {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.45);
+  margin-bottom: 1rem;
+}
+.article-author { color: #E61E8D; font-weight: 600; }
+
+.article-header h1 {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  line-height: 1.0;
+  margin: 0 0 1rem;
+  color: #000;
+}
+
+.article-tags { margin-bottom: 1rem; }
+
+.article-desc {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  color: rgba(0,0,0,0.62);
+  line-height: 1.7;
+  margin: 0;
+  border-left: 4px solid #F7E623;
+  padding-left: 1rem;
+}
+
 .content { line-height: 1.9; }
-.content h2 { margin-top: 2.5rem; }
+.content h2 { margin-top: 2.8rem; }
+.content p { margin: 1.2rem 0; }
+.content img {
+  max-width: 100%;
+  border: 2.5px solid #000;
+  box-shadow: 6px 6px 0 #000;
+  display: block;
+  margin: 2rem 0;
+}
 </style>

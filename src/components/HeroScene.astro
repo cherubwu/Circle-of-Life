@@ -19,6 +19,15 @@ const cards = lang === 'zh'
     ];
 ---
 
+<div id="mag-cursor" aria-hidden="true">
+  <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="21" cy="21" r="17" stroke="#000" stroke-width="4"/>
+    <circle cx="21" cy="21" r="17" stroke="#F2EFE6" stroke-width="2.2" stroke-dasharray="0"/>
+    <line x1="33" y1="33" x2="48" y2="48" stroke="#000" stroke-width="5" stroke-linecap="round"/>
+    <line x1="33" y1="33" x2="48" y2="48" stroke="#E61E8D" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>
+</div>
+
 <section class="bio-hero">
   <div class="bio-grid">
 
@@ -72,6 +81,19 @@ const cards = lang === 'zh'
     ))}
   </div>
 </section>
+
+<script>
+  const cur = document.getElementById('mag-cursor');
+  const hero = document.querySelector('.bio-hero');
+  if (cur && hero) {
+    hero.addEventListener('mousemove', e => {
+      cur.style.left = (e.clientX - 26) + 'px';
+      cur.style.top  = (e.clientY - 26) + 'px';
+      cur.style.opacity = '1';
+    });
+    hero.addEventListener('mouseleave', () => { cur.style.opacity = '0'; });
+  }
+</script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&display=swap');
@@ -324,4 +346,18 @@ const cards = lang === 'zh'
   .bio-left h1 { font-size: 4rem; }
   .bio-cards { grid-template-columns: 1fr; }
 }
+
+/* ── Magnifying glass cursor ── */
+#mag-cursor {
+  position: fixed;
+  width: 52px;
+  height: 52px;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.15s;
+  transform: none;
+}
+#mag-cursor svg { width: 100%; height: 100%; }
+.bio-hero { cursor: none; }
 </style>

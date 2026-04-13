@@ -1,28 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Bebas+Neue&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap');
 
-/* ── Palette ── */
+/* ── Neo-Brutalist palette ── */
 :root {
-  --sage:    #6ecfa0;
-  --teal:    #5bbad5;
-  --lavender:#9c88d4;
-  --rose:    #e07bb0;
-  --amber:   #e8a050;
-  --moss:    #3a5a4a;
-  --dark:    #1a1a2e;
-  --light:   #f5f0e8;
+  --red:      #EF5B5B;
+  --yellow:   #F7E623;
+  --blue:     #3D50B3;
+  --pink:     #E61E8D;
+  --teal:     #1d8a78;
+  --black:    #000000;
+  --cream:    #F2EFE6;
+  --cream-dk: #E8E4D8;
 
-  /* legacy aliases kept for compatibility */
-  --accent:    #9c88d4;
-  --accent-2:  #6ecfa0;
-  --accent-3:  #5bbad5;
-  --bg:        #f5f0e8;
-  --surface:   #ede8df;
-  --surface-2: #e5dfd5;
-  --text:      #1a2e22;
-  --text-muted:#4a6a5a;
-  --border:    #cdc8be;
-  --tag-bg:    rgba(110,207,160,0.2);
-  --tag-text:  #3a5a4a;
+  /* legacy aliases */
+  --sage:    #1d8a78;
+  --teal-c:  #3D50B3;
+  --lavender:#E61E8D;
+  --rose:    #EF5B5B;
+  --amber:   #F7E623;
+  --bg:      #F2EFE6;
+  --surface: #fff;
+  --text:    #000;
+  --text-muted: rgba(0,0,0,0.52);
+  --border:  #000;
 
   font-family: 'DM Sans', 'Noto Serif SC', sans-serif;
 }
@@ -31,51 +30,51 @@
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--text);
+  background: var(--cream);
+  color: var(--black);
   line-height: 1.85;
 }
 
 main {
   max-width: 800px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem;
+  padding: 3rem 1.5rem;
 }
 
-/* ── Bauhaus headings ── */
+/* ── Headings ── */
 h1, h2, h3 {
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 500;
-  line-height: 1.25;
-  letter-spacing: -0.02em;
+  font-family: 'Archivo Black', sans-serif;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: #000;
 }
-h1 { font-size: 2rem; }
+h1 { font-size: 2.6rem; }
 h2 {
-  font-size: 1.35rem;
-  padding-bottom: 0;
-  margin-top: 2.5rem;
-  /* Bauhaus rule line replaces border-bottom */
+  font-size: 1.4rem;
+  margin-top: 2.8rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--sage);
+  border-bottom: 3px solid #000;
 }
 h3 { font-size: 1.1rem; }
 
-a { color: var(--sage); text-decoration: none; }
-a:hover { color: var(--lavender); }
+a { color: #000; text-decoration: underline; text-underline-offset: 3px; }
+a:hover { color: #E61E8D; }
 
-/* ── Bauhaus section dividers ── */
+/* ── Section dividers ── */
 .section-rule {
   width: 100%;
-  height: 2px;
+  height: 3px;
   display: flex;
   margin: 2rem 0;
+  border: 1px solid #000;
 }
 .section-rule span { flex: 1; }
-.section-rule span:nth-child(1) { background: var(--sage); }
-.section-rule span:nth-child(2) { background: var(--lavender); }
-.section-rule span:nth-child(3) { background: var(--amber); }
-.section-rule span:nth-child(4) { background: var(--teal); }
-.section-rule span:nth-child(5) { background: var(--rose); }
+.section-rule span:nth-child(1) { background: #EF5B5B; }
+.section-rule span:nth-child(2) { background: #F7E623; }
+.section-rule span:nth-child(3) { background: #3D50B3; }
+.section-rule span:nth-child(4) { background: #E61E8D; }
+.section-rule span:nth-child(5) { background: #1d8a78; }
 
 /* ── Tables ── */
 table {
@@ -83,55 +82,56 @@ table {
   border-collapse: collapse;
   margin: 1.5rem 0;
   font-size: 0.9rem;
-  background: var(--surface);
-  border-radius: 0;
-  overflow: hidden;
-  border: 2px solid var(--border);
+  background: #fff;
+  border: 2.5px solid #000;
 }
 th {
-  background: rgba(110,207,160,0.15);
-  color: var(--sage);
+  background: #000;
+  color: #F2EFE6;
   padding: 0.7rem 1rem;
   text-align: left;
   font-family: 'DM Sans', sans-serif;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-size: 0.78rem;
-}
-td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--border); }
-
-/* ── Tags — rectangular Bauhaus badges ── */
-.tag {
-  display: inline-block;
-  background: rgba(110,207,160,0.22);
-  color: #3a5a4a;
-  padding: 0.18rem 0.55rem;
-  border-radius: 0;
-  font-size: 0.65rem;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  margin-right: 0.3rem;
-  border: 1px solid rgba(110,207,160,0.6);
+  font-size: 0.72rem;
 }
-.tag:nth-child(2) { background: rgba(156,136,212,0.2); color: #5a3a8a; border-color: rgba(156,136,212,0.6); }
-.tag:nth-child(3) { background: rgba(232,160,80,0.2);  color: #7a4a10; border-color: rgba(232,160,80,0.6); }
-.tag:nth-child(4) { background: rgba(91,186,213,0.2);  color: #2a5a7a; border-color: rgba(91,186,213,0.6); }
+td {
+  padding: 0.65rem 1rem;
+  border-bottom: 1.5px solid rgba(0,0,0,0.12);
+}
+tr:last-child td { border-bottom: none; }
 
-/* ── Blockquote — brain mascot TL;DR ── */
+/* ── Tags ── */
+.tag {
+  display: inline-block;
+  background: #000;
+  color: #F2EFE6;
+  padding: 0.15rem 0.6rem;
+  border-radius: 0;
+  font-size: 0.62rem;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-right: 0.3rem;
+  border: none;
+}
+.tag:nth-child(2) { background: #EF5B5B; }
+.tag:nth-child(3) { background: #3D50B3; }
+.tag:nth-child(4) { background: #E61E8D; }
+
+/* ── Blockquote / TL;DR ── */
 blockquote {
   position: relative;
   margin: 2rem 0 2rem 3.5rem;
   padding: 1.2rem 1.5rem 1.2rem 1.8rem;
-  background: rgba(110,207,160,0.1);
-  border: 1.5px solid rgba(110,207,160,0.45);
-  border-radius: 0;
-  color: var(--text);
+  background: #fff;
+  border: 2.5px solid #000;
+  box-shadow: 6px 6px 0 #000;
+  color: #000;
   font-style: normal;
 }
-
 blockquote::before {
   content: '';
   position: absolute;
@@ -141,37 +141,34 @@ blockquote::before {
   height: 2.4rem;
   background: url('/Circle-of-Life/brain-mascot.jpg') center/cover;
   border-radius: 50%;
-  border: 2px solid rgba(110,207,160,0.6);
-  box-shadow: 0 0 14px rgba(110,207,160,0.3);
+  border: 2.5px solid #000;
+  box-shadow: 3px 3px 0 #000;
 }
-
 blockquote p:first-child::before {
   content: '⚡ TL;DR  ';
   font-weight: 700;
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-  color: var(--sage);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: #000;
   text-transform: uppercase;
   display: block;
   margin-bottom: 0.6rem;
 }
-
 blockquote p, blockquote li {
-  color: var(--text);
+  color: #000;
   margin: 0.3rem 0;
   font-size: 0.95rem;
   line-height: 1.7;
 }
-
 blockquote ul { padding-left: 1.2rem; margin: 0.4rem 0 0; }
-blockquote strong { color: var(--sage); }
+blockquote strong { color: #E61E8D; }
 
 /* ── Code ── */
 code {
-  background: var(--surface);
-  padding: 0.2rem 0.4rem;
+  background: #000;
+  color: #F7E623;
+  padding: 0.2rem 0.45rem;
   border-radius: 0;
   font-size: 0.85em;
-  color: #2b5c8a;
-  border: 1px solid var(--border);
+  border: none;
 }
