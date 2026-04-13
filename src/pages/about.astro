@@ -12,15 +12,15 @@ import Footer from '../components/Footer.astro';
   <main>
     <h1>About Circle of Life</h1>
     <p>
-      Somewhere along the River Cam, between a microscope and a whiteboard full of half-finished hypotheses,
-      I became the kind of person who reads drug trial data for fun.
-      I hold a PhD in Clinical Medicine from the <strong>University of Cambridge</strong>
-      and still haven't left — the science keeps getting more interesting.
-      My work lives at the intersection of <strong>metabolic diseases, neuroscience, and immunology</strong>.
+      Half my life is mirrored in the River Cam; the other half is pinned to a lab whiteboard
+      bristling with <mark class="yellow">untested hypotheses</mark>.
+      Having turned a <span class="red-box">Cambridge PhD</span> into a lifestyle,
+      I've found that clinical trial data reads better than most novels.
+      I'm still here — mostly because the questions remain far more seductive than the answers.
     </p>
     <p>
-      I started Circle of Life because I found existing biotech content either too shallow
-      or too fragmented — there was no platform offering <em>expert-level analysis</em> from
+      Circle of Life exists because I found existing biotech content either too shallow
+      or too fragmented — no platform offered <em>expert-level analysis</em> from
       someone inside the lab, with multidisciplinary insights in both Chinese and English.
     </p>
 
@@ -53,4 +53,25 @@ import Footer from '../components/Footer.astro';
 h1 { margin-bottom: 1.5rem; }
 ul { padding-left: 1.2rem; }
 ul li { margin-bottom: 0.6rem; }
+
+mark.yellow {
+  background: #F7E623;
+  color: #000;
+  padding: 0 0.15em;
+  font-style: normal;
+}
+
+.red-box {
+  display: inline-block;
+  background: transparent;
+  color: #000;
+  border: 2.5px solid #EF5B5B;
+  box-shadow: 3px 3px 0 #EF5B5B;
+  padding: 0 0.35em;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 0.95em;
+  letter-spacing: 0.02em;
+  transform: rotate(-0.8deg);
+  display: inline-block;
+}
 </style>

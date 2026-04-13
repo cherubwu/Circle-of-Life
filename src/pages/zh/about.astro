@@ -12,11 +12,10 @@ import Footer from '../../components/Footer.astro';
   <main>
     <h1>关于生之回环</h1>
     <p>
-      剑桥河边，显微镜旁，一块写满未竟假说的白板前——
-      我在那里拿到了<strong>剑桥大学（University of Cambridge）临床医学博士</strong>，
-      然后留了下来，因为问题还没答完。
-      研究方向横跨<strong>代谢疾病、神经科学与免疫学</strong>，
-      顺带把读临床试验数据变成了一种爱好。
+      我的一半生命留在了康河的倒影里，另一半锁在了实验室那块写满<mark class="yellow">变量</mark>的白板上。
+      在剑桥把 <span class="red-box">PhD</span> 读成一种生活方式后，
+      我发现读临床数据竟然比看小说更让我上瘾。
+      至今还没离开，大概是因为这里的科学问题比答案更迷人。
     </p>
     <p>
       创办「生之回环」的初衷，是因为我发现现有的生物科技内容要么太浅、要么太分散——
@@ -40,4 +39,24 @@ import Footer from '../../components/Footer.astro';
 h1 { margin-bottom: 1.5rem; }
 ul { padding-left: 1.2rem; }
 ul li { margin-bottom: 0.6rem; }
+
+mark.yellow {
+  background: #F7E623;
+  color: #000;
+  padding: 0 0.15em;
+  font-style: normal;
+}
+
+.red-box {
+  background: transparent;
+  color: #000;
+  border: 2.5px solid #EF5B5B;
+  box-shadow: 3px 3px 0 #EF5B5B;
+  padding: 0 0.35em;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 0.95em;
+  letter-spacing: 0.02em;
+  transform: rotate(-0.8deg);
+  display: inline-block;
+}
 </style>
