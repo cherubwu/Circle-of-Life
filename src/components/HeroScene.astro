@@ -279,115 +279,94 @@ function wobblyPath(cx, cy, r, wpts) {
   ctx.closePath();
 }
 
-/* ── Gem polygon path ── */
-function gemPath(cx, cy, r, sides, rotation) {
-  ctx.beginPath();
-  for (let i = 0; i < sides; i++) {
-    const a = (i / sides) * Math.PI * 2 + rotation;
-    // Diamond (4-sided): elongate vertically
-    const stretch = (sides === 4 && i % 2 === 0) ? 1.45 : (sides === 4 ? 0.85 : 1);
-    const px = cx + Math.cos(a) * r * (sides === 4 ? 1 : 1);
-    const py = cy + Math.sin(a) * r * stretch;
-    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-  }
-  ctx.closePath();
-}
-
-/* ── Draw translucent gemstone ── */
+/* ── Draw premium glass-orb node ── */
 function drawGem(n) {
   const isHov = n === hoveredNode;
   const isDrag = n === dragging;
-  const bob = isDrag ? 0 : Math.sin(t * 0.9 + n.phase) * 2.5;
-  const scale = isDrag ? 1.12 : (isHov ? 1.08 : 1);
+  const bob = isDrag ? 0 : Math.sin(t * 0.85 + n.phase) * 2;
+  const scale = isDrag ? 1.1 : (isHov ? 1.07 : 1);
   const r = n.r * scale;
   const cx = n.x, cy = n.y + bob;
-  const sides = n.sides || 6;
-  const rot = n.phase; // static rotation per node
   const [rr, gg, bb] = hexToRgb(n.color);
 
-  /* ── 1. Outer glow halo ── */
-  const glowR = r * (isHov||isDrag ? 3.8 : 2.8);
-  const glow = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, glowR);
-  glow.addColorStop(0, `rgba(${rr},${gg},${bb},${isHov ? 0.28 : 0.13})`);
+  /* 1 — Soft outer glow */
+  const glowR = r * (isHov ? 3.6 : 2.6);
+  const glow = ctx.createRadialGradient(cx, cy, r * 0.7, cx, cy, glowR);
+  glow.addColorStop(0, `rgba(${rr},${gg},${bb},${isHov ? 0.22 : 0.10})`);
   glow.addColorStop(1, `rgba(${rr},${gg},${bb},0)`);
   ctx.beginPath(); ctx.arc(cx, cy, glowR, 0, Math.PI*2);
   ctx.fillStyle = glow; ctx.fill();
 
-  /* ── 2. Gem body — translucent gradient fill ── */
-  const grad = ctx.createLinearGradient(cx - r, cy - r * 1.3, cx + r * 0.4, cy + r * 1.3);
-  grad.addColorStop(0,    `rgba(255,255,255,0.55)`);
-  grad.addColorStop(0.18, `rgba(${Math.min(255,rr+80)},${Math.min(255,gg+80)},${Math.min(255,bb+70)},0.72)`);
-  grad.addColorStop(0.55, `rgba(${rr},${gg},${bb},0.48)`);
-  grad.addColorStop(1,    `rgba(${Math.max(0,rr-50)},${Math.max(0,gg-50)},${Math.max(0,bb-40)},0.32)`);
-  gemPath(cx, cy, r, sides, rot);
-  ctx.fillStyle = grad; ctx.fill();
+  /* 2 — Frosted glass body */
+  const body = ctx.createRadialGradient(cx - r*0.28, cy - r*0.28, 0, cx + r*0.08, cy + r*0.08, r*1.1);
+  body.addColorStop(0,    'rgba(255,255,255,0.60)');
+  body.addColorStop(0.22, `rgba(${Math.min(255,rr+55)},${Math.min(255,gg+55)},${Math.min(255,bb+45)},0.32)`);
+  body.addColorStop(0.65, `rgba(${rr},${gg},${bb},0.16)`);
+  body.addColorStop(1,    `rgba(${Math.max(0,rr-25)},${Math.max(0,gg-25)},${Math.max(0,bb-15)},0.06)`);
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fillStyle = body; ctx.fill();
 
-  /* ── 3. Gem edge — coloured stroke ── */
-  gemPath(cx, cy, r, sides, rot);
-  ctx.strokeStyle = `rgba(${rr},${gg},${bb},0.75)`;
-  ctx.lineWidth = isHov ? 2 : 1.2; ctx.stroke();
+  /* 3 — Crisp coloured rim */
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.strokeStyle = `rgba(${rr},${gg},${bb},${n.type==='root' ? 0.85 : 0.60})`;
+  ctx.lineWidth = n.type === 'root' ? 2 : 1.3; ctx.stroke();
 
-  /* ── 4. Inner facet lines ── */
+  /* 4 — Top-arc glass shine (clipped) */
   ctx.save();
-  gemPath(cx, cy, r, sides, rot);
-  ctx.clip();
-  // Draw lines from centre to alternate vertices (facet effect)
-  for (let i = 0; i < sides; i += 2) {
-    const a = (i / sides) * Math.PI * 2 + rot;
-    const stretch = (sides === 4 && i % 2 === 0) ? 1.45 : (sides === 4 ? 0.85 : 1);
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r * stretch);
-    ctx.strokeStyle = `rgba(255,255,255,0.18)`;
-    ctx.lineWidth = 0.8; ctx.stroke();
-  }
-  // Single horizontal reflection line
-  ctx.beginPath(); ctx.moveTo(cx - r, cy - r * 0.15); ctx.lineTo(cx + r, cy - r * 0.15);
-  ctx.strokeStyle = `rgba(255,255,255,0.12)`; ctx.lineWidth = 0.6; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.clip();
+  const shine = ctx.createLinearGradient(cx - r*0.6, cy - r, cx + r*0.4, cy - r*0.05);
+  shine.addColorStop(0, 'rgba(255,255,255,0.50)');
+  shine.addColorStop(0.6, 'rgba(255,255,255,0.12)');
+  shine.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = shine; ctx.fillRect(cx-r, cy-r, r*2, r*0.9);
   ctx.restore();
 
-  /* ── 5. Top-face highlight (bright trapezoid) ── */
-  ctx.save();
-  gemPath(cx, cy, r, sides, rot);
-  ctx.clip();
-  const hiGrad = ctx.createLinearGradient(cx - r*0.5, cy - r*1.1, cx + r*0.3, cy - r*0.1);
-  hiGrad.addColorStop(0, 'rgba(255,255,255,0.52)');
-  hiGrad.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = hiGrad; ctx.fillRect(cx - r, cy - r*1.4, r*2, r*1.4);
-  ctx.restore();
+  /* 5 — Sharp specular highlight */
+  const spec = ctx.createRadialGradient(cx - r*0.29, cy - r*0.36, 0, cx - r*0.16, cy - r*0.22, r*0.42);
+  spec.addColorStop(0, 'rgba(255,255,255,0.95)');
+  spec.addColorStop(0.45, 'rgba(255,255,255,0.28)');
+  spec.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.beginPath(); ctx.arc(cx - r*0.16, cy - r*0.22, r*0.42, 0, Math.PI*2);
+  ctx.fillStyle = spec; ctx.fill();
 
-  /* ── 6. Sharp specular spark ── */
-  ctx.beginPath(); ctx.arc(cx - r*0.28, cy - r*0.38, r*0.09, 0, Math.PI*2);
-  ctx.fillStyle = 'rgba(255,255,255,0.95)'; ctx.fill();
-
-  /* ── 7. Hover pulsing ring ── */
+  /* 6 — Hover / drag pulsing dashed ring */
   if (isHov || isDrag) {
-    const ringR = r + 8 + Math.sin(t * 3.5) * 3;
-    gemPath(cx, cy, ringR, sides, rot);
-    ctx.strokeStyle = `rgba(${rr},${gg},${bb},0.5)`;
-    ctx.lineWidth = 1.5; ctx.setLineDash([4,5]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(cx, cy, r + 7 + Math.sin(t*3.5)*2.5, 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(${rr},${gg},${bb},0.42)`;
+    ctx.lineWidth = 1.2; ctx.setLineDash([3,7]); ctx.stroke(); ctx.setLineDash([]);
   }
 
-  /* ── 8. URL dot ── */
-  if (n.url) {
-    ctx.beginPath(); ctx.arc(cx + r*0.72, cy - r*0.72, 4.5, 0, Math.PI*2);
-    ctx.fillStyle = isHov ? '#fff' : `rgba(${rr},${gg},${bb},0.9)`;
-    ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 1.2;
-    ctx.fill(); ctx.stroke();
+  /* 7 — URL dot */
+  if (n.url && !isHov) {
+    ctx.beginPath(); ctx.arc(cx + r*0.68, cy - r*0.68, 3.5, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(${rr},${gg},${bb},0.85)`; ctx.fill();
   }
 
-  /* ── 9. Label pill (hover / drag only) ── */
-  if (isHov || isDrag) {
-    const label = n.url ? `${n.label} →` : n.label;
-    const fSize = Math.max(11, n.r * 0.7);
-    ctx.font = `600 ${fSize}px 'DM Sans', sans-serif`;
+  /* 8 — Label: always below for root, pill on hover for leaf */
+  const showLabel = n.type === 'root' || isHov || isDrag;
+  if (showLabel) {
+    const label = (isHov || isDrag) && n.url ? `${n.label} →` : n.label;
+    const fSize = n.type === 'root' ? Math.max(11, n.r * 0.5) : Math.max(10, n.r * 0.62);
+    ctx.font = `${n.type === 'root' ? '600' : '500'} ${fSize}px 'DM Sans', sans-serif`;
     const tw = ctx.measureText(label).width;
-    const lx = cx, ly = cy - r - 18;
-    ctx.fillStyle = `rgba(${rr},${gg},${bb},0.88)`;
-    ctx.beginPath(); ctx.roundRect(lx - tw/2 - 10, ly - fSize/2 - 5, tw + 20, fSize + 10, 4); ctx.fill();
-    ctx.fillStyle = rr + gg + bb > 400 ? '#0a0820' : '#ffffff';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(label, lx, ly);
+    const lx = cx;
+
+    if (n.type === 'root') {
+      // Clean text below node, no pill
+      const ly = cy + r + 14;
+      ctx.fillStyle = `rgba(${rr},${gg},${bb},0.92)`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.fillText(label, lx, ly);
+    } else {
+      // Floating pill above node
+      const ly = cy - r - 17;
+      ctx.fillStyle = `rgba(${rr},${gg},${bb},0.90)`;
+      ctx.beginPath(); ctx.roundRect(lx - tw/2 - 9, ly - fSize/2 - 4, tw + 18, fSize + 8, 3); ctx.fill();
+      const lum = rr * 0.299 + gg * 0.587 + bb * 0.114;
+      ctx.fillStyle = lum > 160 ? '#08061a' : '#ffffff';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, lx, ly);
+    }
   }
 }
 
@@ -420,6 +399,15 @@ function animate() {
   // Transparent canvas — CSS orbs show through
   ctx.clearRect(0, 0, W, H);
 
+  // Subtle precision dot grid (data-viz feel)
+  const gs = 28;
+  ctx.fillStyle = 'rgba(60,40,160,0.055)';
+  for (let gx = gs / 2; gx < W; gx += gs) {
+    for (let gy = gs / 2; gy < H; gy += gs) {
+      ctx.beginPath(); ctx.arc(gx, gy, 0.85, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
   // Force tick
   tickForce();
 
@@ -430,13 +418,14 @@ function animate() {
     const dx=t2.x-s.x, dy=t2.y-s.y, len=Math.sqrt(dx*dx+dy*dy)||1;
     const bend = 28;
     const cpx=mx-(dy/len)*bend, cpy=my+(dx/len)*bend;
-    // subtle shadow
-    ctx.beginPath(); ctx.moveTo(s.x,s.y+1.5); ctx.quadraticCurveTo(cpx,cpy+1.5,t2.x,t2.y+1.5);
-    ctx.strokeStyle='rgba(0,0,0,0.08)'; ctx.lineWidth=3; ctx.lineCap='round'; ctx.stroke();
-    // coloured curve — translucent to match gem aesthetic
-    const [rr,gg,bb]=hexToRgb(s.color);
+    // gradient link — source colour to target colour
+    const [srr,sgg,sbb]=hexToRgb(s.color);
+    const [trr,tgg,tbb]=hexToRgb(t2.color);
+    const lg=ctx.createLinearGradient(s.x,s.y,t2.x,t2.y);
+    lg.addColorStop(0,`rgba(${srr},${sgg},${sbb},0.38)`);
+    lg.addColorStop(1,`rgba(${trr},${tgg},${tbb},0.38)`);
     ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.quadraticCurveTo(cpx,cpy,t2.x,t2.y);
-    ctx.strokeStyle=`rgba(${rr},${gg},${bb},0.35)`; ctx.lineWidth=1.8; ctx.stroke();
+    ctx.strokeStyle=lg; ctx.lineWidth=1.5; ctx.lineCap='round'; ctx.stroke();
   }
 
   // Signals on KG links — flat dot, no gradient
@@ -496,24 +485,43 @@ requestAnimationFrame(animate);
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  max-width: 360px;
+  max-width: 340px;
   pointer-events: none;
+  /* Glass morphism card */
+  background: rgba(255,255,255,0.58);
+  backdrop-filter: blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  border: 1px solid rgba(255,255,255,0.82);
+  padding: 2.4rem 2.8rem 2.6rem;
+  box-shadow:
+    0 2px 0 rgba(255,255,255,0.9) inset,
+    0 8px 40px rgba(50,35,110,0.08),
+    0 1px 3px rgba(50,35,110,0.06);
 }
 
-/* Bauhaus: rectangular badge, no rounded corners */
+/* Editorial eyebrow label */
 .badge {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.6rem;
-  letter-spacing: 0.22em;
+  font-size: 0.57rem;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: #4571ea;
-  border: 1.5px solid rgba(69,113,234,0.5);
-  padding: 0.28rem 0.8rem;
-  border-radius: 0;
-  margin-bottom: 1.2rem;
-  background: rgba(69,113,234,0.06);
+  color: rgba(45,30,110,0.55);
+  padding: 0;
+  border: none;
+  background: none;
+  margin-bottom: 1.1rem;
   width: fit-content;
+}
+.badge::before {
+  content: '';
+  display: block;
+  width: 24px;
+  height: 1px;
+  background: rgba(69,113,234,0.6);
+  flex-shrink: 0;
 }
 
 /* Bauhaus: massive condensed type, flat colour, no gradient */
@@ -522,21 +530,21 @@ requestAnimationFrame(animate);
   font-size: clamp(4rem, 6.5vw, 7rem);
   line-height: 0.88;
   margin: 0 0 0.5rem;
-  color: #0e0c22;
+  color: #06041a;
   font-weight: 400;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-/* Bauhaus accent bar under title */
+/* Premium gradient accent bar under title */
 .scene-left h1::after {
   content: '';
   display: block;
-  width: 3.5rem;
-  height: 4px;
-  background: #e8a050;
-  margin-top: 0.7rem;
-  margin-bottom: 0.9rem;
+  width: 3.2rem;
+  height: 3px;
+  background: linear-gradient(90deg, #4571ea 0%, #9050e0 60%, rgba(144,80,224,0) 100%);
+  margin-top: 0.8rem;
+  margin-bottom: 1rem;
 }
 
 .tagline {
@@ -549,28 +557,33 @@ requestAnimationFrame(animate);
   letter-spacing: 0.02em;
 }
 
-/* Bauhaus: flat rect button */
+/* Premium CTA button */
 .hero-cta {
-  display: inline-block;
-  background: #6ecfa0;
-  color: #1a1a2e;
-  padding: 0.7rem 1.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #4571ea, #7040d8);
+  color: #ffffff;
+  padding: 0.72rem 1.6rem;
   border-radius: 0;
-  font-family: 'Bebas Neue', sans-serif;
-  font-weight: 400;
-  font-size: 1.05rem;
-  letter-spacing: 0.12em;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   width: fit-content;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.4rem;
   pointer-events: all;
-  transition: background 0.18s, color 0.18s;
-  border: 2px solid #6ecfa0;
+  transition: opacity 0.18s, transform 0.18s;
+  border: none;
+  box-shadow: 0 4px 20px rgba(69,113,234,0.35);
 }
 .hero-cta:hover {
-  background: transparent;
-  color: #6ecfa0;
+  opacity: 0.88;
+  transform: translateY(-1px);
   text-decoration: none;
   cursor: pointer;
+  color: #fff;
 }
 
 .graph-hint {
@@ -634,7 +647,7 @@ requestAnimationFrame(animate);
 }
 
 @media (max-width: 700px) {
-  .scene-left { left: 1.5rem; right: 1.5rem; max-width: 100%; transform: translateY(-65%); }
+  .scene-left { left: 1.2rem; right: 1.2rem; max-width: 100%; transform: translateY(-65%); padding: 1.8rem 2rem; }
   .scene-left h1 { font-size: 3.5rem; }
 }
 </style>
