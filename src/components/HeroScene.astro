@@ -1,874 +1,435 @@
 ---
 const lang = Astro.currentLocale ?? 'en';
 const base = '/Circle-of-Life';
+
+const headline   = lang === 'zh' ? ['探索', '生命', '科学的', '边界。'] : ['EXPLORE', 'THE INNER', 'BIOLOGY', 'OF LIFE.'];
+const eyebrow    = lang === 'zh' ? '— 生物科技 · 神经科学 · 2025' : '— BIOTECH · NEUROSCIENCE · 2025';
+const floatLabel = lang === 'zh' ? 'ORGANIC STRUCTURES 有机结构' : 'ORGANIC STRUCTURES';
+const ctaText    = lang === 'zh' ? '订阅周刊 →' : 'SUBSCRIBE →';
+
+const features = lang === 'zh'
+  ? [
+      { title:'神经科学', sub:'脑机接口 · 阿尔茨海默 · 神经调控', href:`${base}/blog`, color:'#1d8a78', pattern:'neural'   },
+      { title:'代谢',     sub:'MASH · GLP-1 · 线粒体 · 胰岛素',   href:`${base}/blog`, color:'#f2c532', pattern:'lung'     },
+      { title:'免疫学',   sub:'CAR-T · 检查点 · 自身免疫 · 衰老',  href:`${base}/blog`, color:'#d91882', pattern:'intestine'},
+    ]
+  : [
+      { title:'NEUROSCIENCE', sub:"BCI · Alzheimer's · Parkinson's",  href:`${base}/blog`, color:'#1d8a78', pattern:'neural'   },
+      { title:'METABOLISM',   sub:'MASH · GLP-1 · Lipid · Insulin',   href:`${base}/blog`, color:'#f2c532', pattern:'lung'     },
+      { title:'IMMUNOLOGY',   sub:'CAR-T · Checkpoint · Autoimmune',   href:`${base}/blog`, color:'#d91882', pattern:'intestine'},
+    ];
 ---
 
-<section class="hero-scene" id="hero-scene">
-  <!-- regi.it-style floating gradient orbs -->
-  <div class="orb orb-1" aria-hidden="true"></div>
-  <div class="orb orb-2" aria-hidden="true"></div>
-  <div class="orb orb-3" aria-hidden="true"></div>
+<section class="bio-hero">
+  <canvas id="bio-canvas" aria-hidden="true"></canvas>
 
-  <canvas id="neural-canvas"></canvas>
+  <div class="bio-headline">
+    <span class="bio-eyebrow">{eyebrow}</span>
+    <h1>{headline.map(line => <>{line}<br/></>)}</h1>
+    <a href="https://your-substack.substack.com" target="_blank" class="bio-cta">{ctaText}</a>
+  </div>
 
-  <div class="scene-left">
-    <span class="badge">Biotech · Neuroscience · 2025</span>
-    <h1>{lang === 'zh' ? <>生之<br/>回环</> : <>Circle<br/>of Life</>}</h1>
-    <p class="tagline">{lang === 'zh'
-      ? '研究者视角的生命科学洞见\n聚焦创新药与神经科学前沿'
-      : 'Biotech insights from inside the lab.\nInnovative drugs · Neuroscience · Metabolism.'}</p>
-    <a href="https://your-substack.substack.com" target="_blank" class="hero-cta">
-      {lang === 'zh' ? '订阅周刊 →' : 'Subscribe →'}
-    </a>
-    <p class="graph-hint">{lang === 'zh' ? '→ 拖拽行星 · 悬停查看 · 点击文章' : '→ Drag planets · Hover to reveal · Click for articles'}</p>
+  <div class="bio-float-label">{floatLabel}</div>
+
+  <div class="bio-strip">
+    {features.map(f => (
+      <a href={f.href} class="bio-feat" style={`--fc:${f.color}`}>
+        <div class="bio-feat-icon" data-pattern={f.pattern}></div>
+        <div class="bio-feat-body">
+          <strong class="bio-feat-title">{f.title}</strong>
+          <span class="bio-feat-sub">{f.sub}</span>
+          <span class="bio-learn">{lang === 'zh' ? '探索 →' : 'LEARN MORE →'}</span>
+        </div>
+      </a>
+    ))}
   </div>
 </section>
 
 <script define:vars={{ lang, base }}>
-const canvas = document.getElementById('neural-canvas');
+const canvas = document.getElementById('bio-canvas');
 const ctx = canvas.getContext('2d');
 let W = 0, H = 0;
-let t = 0;
 
-/* ── Mouse / butterfly cursor ── */
-const mouse = { x: -9999, y: -9999 };
-const bfly = { x: -9999, y: -9999 }; // lagged body position
-let bflyReady = false;
+/* ── Biological texture helpers ── */
 
-function onMouseMove(e) {
-  const r = canvas.getBoundingClientRect();
-  mouse.x = e.clientX - r.left;
-  mouse.y = e.clientY - r.top;
-  if (!bflyReady) { bfly.x = mouse.x; bfly.y = mouse.y; bflyReady = true; }
+// Brain coral: grid of small arcs
+function drawCoral(x1, y1, x2, y2) {
+  const step = 22;
+  ctx.lineWidth = 1.8;
+  ctx.strokeStyle = 'rgba(8,42,35,0.22)';
+  for (let gy = y1; gy < y2; gy += step) {
+    for (let gx = x1; gx < x2; gx += step) {
+      const phase = Math.sin(gx * 0.09 + gy * 0.07) * Math.PI;
+      const r2 = step * 0.3;
+      ctx.beginPath();
+      ctx.arc(gx, gy, r2, phase, phase + Math.PI);
+      ctx.stroke();
+    }
+  }
 }
-window.addEventListener('mousemove', onMouseMove);
 
+// Lung branching tree
+function drawBranch(x, y, angle, len, depth) {
+  if (depth <= 0 || len < 2) return;
+  const ex = x + Math.cos(angle) * len;
+  const ey = y + Math.sin(angle) * len;
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(ex, ey);
+  ctx.strokeStyle = `rgba(90,55,0,${0.35 + depth * 0.07})`;
+  ctx.lineWidth = Math.max(0.5, depth * 0.65);
+  ctx.lineCap = 'round'; ctx.stroke();
+  const spread = 0.36 + (6 - depth) * 0.03;
+  drawBranch(ex, ey, angle - spread, len * 0.68, depth - 1);
+  drawBranch(ex, ey, angle + spread, len * 0.68, depth - 1);
+}
+
+function drawLungs(cx, cy, size) {
+  // Trachea
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy + size * 0.28);
+  ctx.strokeStyle = 'rgba(90,55,0,0.75)'; ctx.lineWidth = 3.5;
+  ctx.lineCap = 'round'; ctx.stroke();
+  drawBranch(cx, cy + size * 0.28, -Math.PI/2 - 0.45, size * 0.44, 5);
+  drawBranch(cx, cy + size * 0.28, -Math.PI/2 + 0.45, size * 0.44, 5);
+}
+
+// Intestinal coil
+function drawIntestines(cx, cy, r) {
+  const pts = [];
+  for (let i = 0; i < 26; i++) {
+    const wind = i * 0.52;
+    const amp  = r * (0.12 + (i % 5) * 0.065);
+    pts.push({
+      x: cx + Math.cos(wind) * amp * 1.5,
+      y: cy - r * 0.38 + Math.sin(wind * 0.65) * amp + i * r * 0.031,
+    });
+  }
+  // White outer tube
+  ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length - 1; i++) {
+    const mx = (pts[i].x + pts[i+1].x) / 2;
+    const my = (pts[i].y + pts[i+1].y) / 2;
+    ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
+  }
+  ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 15;
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+  ctx.strokeStyle = 'rgba(160,0,90,0.4)'; ctx.lineWidth = 9; ctx.stroke();
+}
+
+// Topographic contour rings
+function drawTopographic(cx, cy, r) {
+  for (let i = 1; i <= 5; i++) {
+    const rr = r * (i / 5.5);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rr * 1.1, rr * 0.65, -0.18, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(100,220,170,${0.45 - i * 0.06})`;
+    ctx.lineWidth = 1; ctx.stroke();
+  }
+}
+
+// Small icon canvas drawings for the feature strip icons
+function drawFeatureIcon(canvasEl, pattern, color) {
+  const fc = canvasEl.getContext('2d');
+  const sz = canvasEl.width;
+  fc.clearRect(0, 0, sz, sz);
+  // Background circle
+  fc.beginPath(); fc.arc(sz/2, sz/2, sz/2 - 2, 0, Math.PI*2);
+  fc.fillStyle = color; fc.fill();
+  fc.save(); fc.beginPath(); fc.arc(sz/2, sz/2, sz/2 - 2, 0, Math.PI*2); fc.clip();
+  if (pattern === 'neural') {
+    // Simple node network
+    const nodes = [[sz*0.5,sz*0.25],[sz*0.25,sz*0.55],[sz*0.5,sz*0.7],[sz*0.75,sz*0.55],[sz*0.5,sz*0.5]];
+    const links = [[0,4],[1,4],[2,4],[3,4],[0,1],[2,3]];
+    fc.strokeStyle='rgba(255,255,255,0.6)'; fc.lineWidth=1;
+    links.forEach(([a,b]) => { fc.beginPath(); fc.moveTo(nodes[a][0],nodes[a][1]); fc.lineTo(nodes[b][0],nodes[b][1]); fc.stroke(); });
+    nodes.forEach(([nx,ny],i) => { fc.beginPath(); fc.arc(nx,ny,i===4?5:3.5,0,Math.PI*2); fc.fillStyle='rgba(255,255,255,0.9)'; fc.fill(); });
+  } else if (pattern === 'lung') {
+    fc.strokeStyle='rgba(100,65,0,0.7)'; fc.lineWidth=1.5; fc.lineCap='round';
+    function fb(x,y,a,l,d) { if(d<=0||l<1)return; const ex=x+Math.cos(a)*l, ey=y+Math.sin(a)*l; fc.beginPath();fc.moveTo(x,y);fc.lineTo(ex,ey);fc.stroke(); fb(ex,ey,a-0.42,l*0.68,d-1); fb(ex,ey,a+0.42,l*0.68,d-1); }
+    fc.lineWidth=2; fc.beginPath(); fc.moveTo(sz/2,sz*0.18); fc.lineTo(sz/2,sz*0.36); fc.stroke();
+    fb(sz/2,sz*0.36,-Math.PI/2-0.45,sz*0.22,4); fb(sz/2,sz*0.36,-Math.PI/2+0.45,sz*0.22,4);
+  } else {
+    // Intestine rings
+    const pts2=[];
+    for(let i=0;i<16;i++){const w=i*0.55,a=sz*(0.08+(i%4)*0.04);pts2.push({x:sz/2+Math.cos(w)*a*1.3,y:sz/2-sz*0.2+Math.sin(w*0.6)*a+i*sz*0.027});}
+    fc.beginPath(); fc.moveTo(pts2[0].x,pts2[0].y);
+    for(let i=1;i<pts2.length-1;i++){const mx=(pts2[i].x+pts2[i+1].x)/2,my=(pts2[i].y+pts2[i+1].y)/2;fc.quadraticCurveTo(pts2[i].x,pts2[i].y,mx,my);}
+    fc.strokeStyle='rgba(255,255,255,0.5)'; fc.lineWidth=8; fc.lineCap='round'; fc.stroke();
+    fc.strokeStyle='rgba(160,0,90,0.4)'; fc.lineWidth=4; fc.stroke();
+  }
+  fc.restore();
+}
+
+/* ── Main scene draw ── */
+function drawScene() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Cream background
+  ctx.fillStyle = '#f5f4ef';
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Teal organic blob (top-right) ──
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(W * 0.40, 0);
+  ctx.bezierCurveTo(W * 0.62, -H * 0.04, W * 1.08, H * 0.06, W, H * 0.38);
+  ctx.bezierCurveTo(W * 1.06, H * 0.64, W * 0.78, H * 0.80, W * 0.58, H * 0.73);
+  ctx.bezierCurveTo(W * 0.42, H * 0.67, W * 0.34, H * 0.52, W * 0.38, H * 0.30);
+  ctx.bezierCurveTo(W * 0.38, H * 0.13, W * 0.36, H * 0.04, W * 0.40, 0);
+  ctx.closePath();
+  ctx.fillStyle = '#1d8a78';
+  ctx.fill();
+  ctx.clip();
+  drawCoral(W * 0.35, -10, W + 10, H * 0.82);
+  ctx.restore();
+
+  // ── Yellow vertical rectangle ──
+  const yr = { x: W * 0.51, y: H * 0.10, w: W * 0.16, h: H * 0.54 };
+  ctx.save();
+  ctx.fillStyle = '#f2c532';
+  ctx.fillRect(yr.x, yr.y, yr.w, yr.h);
+  ctx.rect(yr.x, yr.y, yr.w, yr.h);
+  ctx.clip();
+  drawLungs(yr.x + yr.w * 0.5, yr.y + yr.h * 0.15, H * 0.20);
+  ctx.restore();
+
+  // ── Magenta blob (far right) ──
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(W * 0.72, H * 0.18);
+  ctx.bezierCurveTo(W * 0.88, H * 0.10, W * 1.06, H * 0.22, W, H * 0.46);
+  ctx.bezierCurveTo(W * 1.07, H * 0.68, W * 0.88, H * 0.82, W * 0.72, H * 0.73);
+  ctx.bezierCurveTo(W * 0.60, H * 0.66, W * 0.62, H * 0.40, W * 0.72, H * 0.18);
+  ctx.closePath();
+  ctx.fillStyle = '#d91882';
+  ctx.fill();
+  ctx.clip();
+  drawIntestines(W * 0.83, H * 0.46, H * 0.24);
+  ctx.restore();
+
+  // ── Small dark teal accent circle ──
+  ctx.save();
+  ctx.beginPath(); ctx.arc(W * 0.44, H * 0.47, H * 0.07, 0, Math.PI * 2);
+  ctx.fillStyle = '#1a4a3a'; ctx.fill();
+  ctx.clip();
+  drawTopographic(W * 0.44, H * 0.47, H * 0.07);
+  ctx.restore();
+
+  // Small red dot accent
+  ctx.beginPath(); ctx.arc(W * 0.485, H * 0.155, H * 0.024, 0, Math.PI * 2);
+  ctx.fillStyle = '#d93018'; ctx.fill();
+
+  // Small yellow circle accent (lower left of teal)
+  ctx.beginPath(); ctx.arc(W * 0.40, H * 0.66, H * 0.03, 0, Math.PI * 2);
+  ctx.fillStyle = '#f2c532'; ctx.fill();
+
+  // ── Dark feature strip bg ──
+  const stripTop = H * 0.80;
+  ctx.fillStyle = '#111128';
+  ctx.fillRect(0, stripTop, W, H - stripTop);
+
+  // Vertical dividers in strip
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  [1/3, 2/3].forEach(frac => {
+    ctx.beginPath(); ctx.moveTo(W * frac, stripTop); ctx.lineTo(W * frac, H); ctx.stroke();
+  });
+}
+
+/* ── Resize & init ── */
 function resize() {
-  W = canvas.width = canvas.offsetWidth;
+  W = canvas.width  = canvas.offsetWidth;
   H = canvas.height = canvas.offsetHeight;
-  initKGPositions();
+  drawScene();
 }
 window.addEventListener('resize', resize);
 
-/* ── Knowledge graph data ── */
-const KG_NODES = [
-  // Root flowers — pink / purple / blue
-  { id: 'immune',     label: lang==='zh'?'免疫':'Immunology',    color:'#f472b6', centerColor:'#fbbf24', r:38, petals:6, url:null,   type:'root', bloom:0, bloomTarget:0, x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'neuro',      label: lang==='zh'?'脑科学':'Neuroscience', color:'#a78bfa', centerColor:'#fcd34d', r:38, petals:5, url:null,   type:'root', bloom:0, bloomTarget:0, x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'metabolism', label: lang==='zh'?'代谢':'Metabolism',     color:'#60a5fa', centerColor:'#fb923c', r:38, petals:7, url:null,   type:'root', bloom:0, bloomTarget:0, x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-
-  // Bees — immune hive
-  { id: 'cart',       label:'CAR-T',                               color:'#f9a8d4', r:13, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'checkpoint', label: lang==='zh'?'检查点':'Checkpoint',    color:'#f472b6', r:12, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'autoimmune', label: lang==='zh'?'自身免疫':'Autoimmune',  color:'#ec4899', r:11, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'senescence', label: lang==='zh'?'衰老':'Senescence',      color:'#f9a8d4', r:11, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-
-  // Bees — neuro hive
-  { id: 'bci',        label:'BCI',                                  color:'#c4b5fd', r:14, url:`${base}/blog/bci-future-en/`, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'alzheimer',  label:"Alzheimer's",                          color:'#a78bfa', r:12, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'parkinson',  label:"Parkinson's",                          color:'#8b5cf6', r:11, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'neuromod',   label: lang==='zh'?'神经调控':'Neuromod',     color:'#c4b5fd', r:10, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-
-  // Bees — metabolism hive
-  { id: 'mash',       label:'MASH/MASLD',                           color:'#93c5fd', r:13, url:`${base}/blog/mash-pipeline-en/`, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'glp1',       label:'GLP-1',                                color:'#60a5fa', r:12, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'lipid',      label: lang==='zh'?'脂质':'Lipid',            color:'#3b82f6', r:11, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'insulin',    label: lang==='zh'?'胰岛素':'Insulin',        color:'#93c5fd', r:10, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-  { id: 'mito',       label: lang==='zh'?'线粒体':'Mitochondria',   color:'#60a5fa', r:10, url:null, type:'leaf', x:0,y:0,vx:0,vy:0,fx:null,fy:null },
-];
-
-const KG_LINKS = [
-  ['metabolism','mash'],['metabolism','glp1'],['metabolism','lipid'],
-  ['metabolism','insulin'],['metabolism','mito'],
-  ['neuro','bci'],['neuro','alzheimer'],['neuro','parkinson'],['neuro','neuromod'],
-  ['immune','cart'],['immune','checkpoint'],['immune','autoimmune'],['immune','senescence'],
-  ['glp1','mash'],['senescence','mito'],['insulin','alzheimer'],
-];
-
-const nodeMap = Object.fromEntries(KG_NODES.map(n => [n.id, n]));
-
-/* ── Per-node randomness ── */
-KG_NODES.forEach(n => {
-  n.phase = Math.random() * Math.PI * 2;
-  // Bees get a random wing-beat offset
-  n.wingPhase = Math.random() * Math.PI * 2;
-  // Bees get a random wander offset
-  n.wanderAngle = Math.random() * Math.PI * 2;
-});
-
-function initKGPositions() {
-  const cx = W * 0.62, cy = H * 0.5;
-  const roots = KG_NODES.filter(n => n.type === 'root');
-  roots.forEach((r, i) => {
-    const angle = (i / roots.length) * Math.PI * 2 - Math.PI / 2;
-    r.x = cx + Math.cos(angle) * Math.min(W, H) * 0.22;
-    r.y = cy + Math.sin(angle) * Math.min(W, H) * 0.22;
+/* ── Feature-strip icon canvases ── */
+function initIconCanvases() {
+  document.querySelectorAll('.bio-feat-icon').forEach(el => {
+    const pattern = el.dataset.pattern;
+    const feat = el.closest('.bio-feat');
+    const color = getComputedStyle(feat).getPropertyValue('--fc').trim();
+    const c = document.createElement('canvas');
+    c.width = c.height = 60;
+    c.style.cssText = 'width:60px;height:60px;border-radius:50%;flex-shrink:0;';
+    el.appendChild(c);
+    drawFeatureIcon(c, pattern, color);
   });
-  KG_NODES.filter(n => n.type === 'leaf').forEach((n, i) => {
-    n.x = cx + (Math.random() - 0.5) * W * 0.7;
-    n.y = cy + (Math.random() - 0.5) * H * 0.85;
-  });
-}
-
-/* ── Force simulation ── */
-function tickForce() {
-  const alpha = 0.06;
-  // Link forces
-  for (const [sid, tid] of KG_LINKS) {
-    const s = nodeMap[sid], t2 = nodeMap[tid];
-    if (!s || !t2) continue;
-    const ideal = (s.type==='root'||t2.type==='root') ? 195 : 135;
-    const dx = t2.x - s.x, dy = t2.y - s.y;
-    const dist = Math.sqrt(dx*dx+dy*dy) || 1;
-    const f = (dist - ideal) / dist * alpha * 0.5;
-    if (!s.fx) { s.vx += dx*f; s.vy += dy*f; }
-    if (!t2.fx) { t2.vx -= dx*f; t2.vy -= dy*f; }
-  }
-  // Repulsion
-  for (let i = 0; i < KG_NODES.length; i++) {
-    for (let j = i+1; j < KG_NODES.length; j++) {
-      const a = KG_NODES[i], b = KG_NODES[j];
-      const dx = b.x-a.x, dy = b.y-a.y;
-      const dist = Math.sqrt(dx*dx+dy*dy) || 1;
-      const minDist = a.r + b.r + 75;
-      if (dist < minDist) {
-        const f = (minDist - dist) / dist * 0.4;
-        if (!a.fx) { a.vx -= dx*f; a.vy -= dy*f; }
-        if (!b.fx) { b.vx += dx*f; b.vy += dy*f; }
-      }
-    }
-  }
-  // Center pull (spread across 2/3 of canvas)
-  const cx = W*0.62, cy = H*0.5;
-  KG_NODES.forEach(n => {
-    if (n.fx !== null) { n.x = n.fx; n.y = n.fy; return; }
-    n.vx += (cx - n.x) * 0.0015;
-    n.vy += (cy - n.y) * 0.0015;
-    n.vx *= 0.85; n.vy *= 0.85;
-    n.x += n.vx; n.y += n.vy;
-    // Allow spread across most of canvas (keep clear of text on left)
-    n.x = Math.max(W*0.30 + n.r, Math.min(W - n.r - 8, n.x));
-    n.y = Math.max(n.r + 8, Math.min(H - n.r - 8, n.y));
-  });
-}
-
-/* ── Drag ── */
-let dragging = null;
-
-canvas.addEventListener('mousedown', e => {
-  const r = canvas.getBoundingClientRect();
-  const px = e.clientX - r.left, py = e.clientY - r.top;
-  for (const n of KG_NODES) {
-    const dx = px-n.x, dy = py-n.y;
-    if (dx*dx+dy*dy < (n.r+6)**2) { dragging = n; n.fx = n.x; n.fy = n.y; break; }
-  }
-});
-
-canvas.addEventListener('mousemove', e => {
-  if (dragging) { dragging.fx = mouse.x; dragging.fy = mouse.y; }
-});
-
-canvas.addEventListener('mouseup', e => {
-  if (dragging) { dragging.fx = null; dragging.fy = null; dragging = null; }
-});
-
-/* ── Bloom on click for root flowers ── */
-canvas.addEventListener('click', e => {
-  const r2 = canvas.getBoundingClientRect();
-  const px = e.clientX - r2.left, py = e.clientY - r2.top;
-  for (const n of KG_NODES) {
-    if (n.type !== 'root') continue;
-    const dx = px - n.x, dy = py - n.y;
-    if (dx*dx + dy*dy < (n.r + 14)**2) {
-      n.bloomTarget = n.bloomTarget > 0.5 ? 0 : 1;
-      return; // don't navigate
-    }
-  }
-});
-
-canvas.addEventListener('click', e => {
-  if (dragging) return;
-  const r = canvas.getBoundingClientRect();
-  const px = e.clientX - r.left, py = e.clientY - r.top;
-  for (const n of KG_NODES) {
-    const dx = px-n.x, dy = py-n.y;
-    if (dx*dx+dy*dy < (n.r+6)**2 && n.url) { window.location.href = n.url; break; }
-  }
-});
-
-/* ── Hover detection ── */
-let hoveredNode = null;
-canvas.addEventListener('mousemove', () => {
-  if (dragging) { canvas.style.cursor = 'grabbing'; return; }
-  hoveredNode = null;
-  for (const n of KG_NODES) {
-    const dx = mouse.x-n.x, dy = mouse.y-n.y;
-    if (dx*dx+dy*dy < (n.r+8)**2) { hoveredNode = n; break; }
-  }
-  canvas.style.cursor = hoveredNode ? (hoveredNode.url ? 'pointer' : 'grab') : 'none';
-});
-
-/* ── Background geometric shapes (Bauhaus / Surrealist floating forms) ── */
-const SHAPE_COLS = [
-  'rgba(110,207,160,', // sage
-  'rgba(91,186,213,',  // teal
-  'rgba(156,136,212,', // lavender
-  'rgba(224,123,176,', // rose
-  'rgba(232,160,80,',  // amber
-];
-const SHAPE_TYPES = ['circle', 'triangle', 'rect', 'circle', 'circle'];
-const BG_SHAPES = Array.from({ length: 28 }, () => ({
-  x: Math.random(), y: Math.random(),
-  vx: (Math.random()-0.5)*0.00007, vy: (Math.random()-0.5)*0.00007,
-  size: 12 + Math.random() * 40,
-  rot: Math.random() * Math.PI * 2,
-  rotV: (Math.random()-0.5) * 0.004,
-  type: SHAPE_TYPES[Math.floor(Math.random()*SHAPE_TYPES.length)],
-  col: SHAPE_COLS[Math.floor(Math.random()*SHAPE_COLS.length)],
-  alpha: 0.06 + Math.random() * 0.1,
-  hollow: Math.random() > 0.4,
-}));
-
-/* ── Signals ── */
-const signals = [];
-function spawnSignal() {
-  const link = KG_LINKS[Math.floor(Math.random()*KG_LINKS.length)];
-  const s = nodeMap[link[0]], t2 = nodeMap[link[1]];
-  if (s && t2) signals.push({ s, t2, progress: 0, speed: 0.006+Math.random()*0.007 });
-}
-setInterval(spawnSignal, 350);
-
-/* ── Colour helpers ── */
-function hexToRgb(hex) {
-  return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
-}
-function lighten(hex, amt) {
-  const [r,g,b] = hexToRgb(hex);
-  return `rgb(${Math.min(255,r+amt)},${Math.min(255,g+amt)},${Math.min(255,b+amt)})`;
-}
-function darken(hex, amt) {
-  const [r,g,b] = hexToRgb(hex);
-  return `rgb(${Math.max(0,r-amt)},${Math.max(0,g-amt)},${Math.max(0,b-amt)})`;
-}
-
-/* ── Wobbly blob path ── */
-function wobblyPath(cx, cy, r, wpts) {
-  const pts = wpts.map(p => ({
-    x: cx + Math.cos(p.angle) * r * p.rf,
-    y: cy + Math.sin(p.angle) * r * p.rf,
-  }));
-  ctx.beginPath();
-  ctx.moveTo((pts[0].x + pts[pts.length-1].x)/2, (pts[0].y + pts[pts.length-1].y)/2);
-  for (let i = 0; i < pts.length; i++) {
-    const a = pts[i], b = pts[(i+1) % pts.length];
-    ctx.quadraticCurveTo(a.x, a.y, (a.x+b.x)/2, (a.y+b.y)/2);
-  }
-  ctx.closePath();
-}
-
-/* ── Draw cute cartoon flower (root node) ── */
-function drawFlower(n) {
-  const isHov = n === hoveredNode || n === dragging;
-  const bob = Math.sin(t * 0.8 + n.phase) * 3;
-  const cx = n.x, cy = n.y + bob;
-  const r = n.r;
-  const petals = n.petals || 6;
-
-  // Animate bloom value toward target
-  n.bloom += (n.bloomTarget - n.bloom) * 0.07;
-
-  const petalR = r * (0.72 + n.bloom * 0.45); // petals open outward
-  const petalSize = r * (0.58 + n.bloom * 0.22);
-  const [rr,gg,bb] = hexToRgb(n.color);
-
-  // Soft shadow under flower
-  const shadow = ctx.createRadialGradient(cx, cy + r * 0.7, 0, cx, cy + r * 0.7, r * 1.2);
-  shadow.addColorStop(0, 'rgba(0,0,0,0.08)');
-  shadow.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.beginPath(); ctx.ellipse(cx, cy + r * 0.8, r * 1.1, r * 0.4, 0, 0, Math.PI*2);
-  ctx.fillStyle = shadow; ctx.fill();
-
-  // Petals
-  for (let i = 0; i < petals; i++) {
-    const angle = (i / petals) * Math.PI * 2 + n.phase * 0.3 + t * 0.04;
-    const px = cx + Math.cos(angle) * petalR;
-    const py = cy + Math.sin(angle) * petalR;
-    // Petal gradient: lighter toward tip
-    const pg = ctx.createRadialGradient(px, py, 0, cx, cy, petalR + petalSize);
-    pg.addColorStop(0, `rgba(${Math.min(255,rr+55)},${Math.min(255,gg+55)},${Math.min(255,bb+50)},0.92)`);
-    pg.addColorStop(1, `rgba(${rr},${gg},${bb},0.72)`);
-    ctx.beginPath();
-    ctx.ellipse(px, py, petalSize * 0.52, petalSize * 0.78, angle, 0, Math.PI*2);
-    ctx.fillStyle = pg; ctx.fill();
-    // Petal outline
-    ctx.strokeStyle = `rgba(${Math.max(0,rr-30)},${Math.max(0,gg-30)},${Math.max(0,bb-25)},0.5)`;
-    ctx.lineWidth = 0.8; ctx.stroke();
-  }
-
-  // Centre disk
-  const diskR = r * (0.38 + n.bloom * 0.06);
-  const cg = ctx.createRadialGradient(cx - diskR*0.28, cy - diskR*0.28, 0, cx, cy, diskR);
-  const [cr,cgn,cblu] = hexToRgb(n.centerColor);
-  cg.addColorStop(0, `rgba(${Math.min(255,cr+60)},${Math.min(255,cgn+60)},${Math.min(255,cblu+40)},1)`);
-  cg.addColorStop(1, `rgba(${Math.max(0,cr-20)},${Math.max(0,cgn-20)},${Math.max(0,cblu-10)},1)`);
-  ctx.beginPath(); ctx.arc(cx, cy, diskR, 0, Math.PI*2);
-  ctx.fillStyle = cg; ctx.fill();
-  ctx.strokeStyle = `rgba(${Math.max(0,cr-40)},${Math.max(0,cgn-40)},0,0.6)`;
-  ctx.lineWidth = 1; ctx.stroke();
-
-  // Centre dots (seed texture)
-  for (let d = 0; d < 7; d++) {
-    const da = (d / 7) * Math.PI * 2;
-    const dr = diskR * 0.48;
-    ctx.beginPath(); ctx.arc(cx + Math.cos(da)*dr, cy + Math.sin(da)*dr, diskR*0.08, 0, Math.PI*2);
-    ctx.fillStyle = `rgba(${Math.max(0,cr-60)},${Math.max(0,cgn-60)},0,0.55)`; ctx.fill();
-  }
-
-  // Hover glow ring
-  if (isHov) {
-    ctx.beginPath(); ctx.arc(cx, cy, r + 12 + Math.sin(t*3)*3, 0, Math.PI*2);
-    ctx.strokeStyle = `rgba(${rr},${gg},${bb},0.35)`;
-    ctx.lineWidth = 2; ctx.setLineDash([4,6]); ctx.stroke(); ctx.setLineDash([]);
-  }
-
-  // Label
-  const fSize = 11;
-  ctx.font = `600 ${fSize}px 'DM Sans', sans-serif`;
-  const lw = ctx.measureText(n.label).width;
-  const lx = cx, ly = cy + r + 18;
-  ctx.fillStyle = `rgba(${rr},${gg},${bb},0.95)`;
-  ctx.beginPath(); ctx.roundRect(lx - lw/2 - 8, ly - fSize/2 - 4, lw+16, fSize+8, 3); ctx.fill();
-  const lum = rr*0.299 + gg*0.587 + bb*0.114;
-  ctx.fillStyle = lum > 170 ? '#2d1a5e' : '#fff';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(n.label, lx, ly);
-
-  // Bloom hint: small "click me" sparkle when not bloomed
-  if (n.bloom < 0.05 && !isHov) {
-    ctx.beginPath(); ctx.arc(cx + r*0.7, cy - r*0.7, 4, 0, Math.PI*2);
-    ctx.fillStyle = '#fbbf24'; ctx.fill();
-  }
-}
-
-/* ── Draw cute cartoon bee (leaf node) ── */
-function drawBee(n) {
-  const isHov = n === hoveredNode || n === dragging;
-  // Gentle bob + wander
-  const bob = Math.sin(t * 2.2 + n.phase) * 3;
-  const cx = n.x, cy = n.y + bob;
-  const r = n.r;
-
-  // Wing flutter angle
-  const wFlap = Math.sin(t * 8 + n.wingPhase) * 0.45;
-  const [rr,gg,bb] = hexToRgb(n.color);
-
-  // Wings (translucent, flutter up/down)
-  const wingW = r * 1.25, wingH = r * 0.75;
-  ctx.save();
-  ctx.translate(cx, cy - r * 0.1);
-  // Left upper wing
-  ctx.save(); ctx.rotate(-0.4 + wFlap);
-  ctx.beginPath(); ctx.ellipse(-r * 0.55, -r * 0.5, wingW * 0.7, wingH, -0.4, 0, Math.PI*2);
-  ctx.fillStyle = 'rgba(200,230,255,0.68)';
-  ctx.strokeStyle = 'rgba(150,180,230,0.6)'; ctx.lineWidth = 0.8;
-  ctx.fill(); ctx.stroke(); ctx.restore();
-  // Right upper wing
-  ctx.save(); ctx.rotate(0.4 - wFlap);
-  ctx.beginPath(); ctx.ellipse(r * 0.55, -r * 0.5, wingW * 0.7, wingH, 0.4, 0, Math.PI*2);
-  ctx.fillStyle = 'rgba(200,230,255,0.68)';
-  ctx.strokeStyle = 'rgba(150,180,230,0.6)'; ctx.lineWidth = 0.8;
-  ctx.fill(); ctx.stroke(); ctx.restore();
-  ctx.restore();
-
-  // Body (rounded rectangle — bee abdomen)
-  const bodyGrad = ctx.createLinearGradient(cx, cy - r*0.7, cx, cy + r*0.7);
-  bodyGrad.addColorStop(0, `rgba(${Math.min(255,rr+60)},${Math.min(255,gg+60)},${Math.min(255,bb+50)},1)`);
-  bodyGrad.addColorStop(0.5, n.color);
-  bodyGrad.addColorStop(1, `rgba(${Math.max(0,rr-40)},${Math.max(0,gg-40)},${Math.max(0,bb-30)},1)`);
-  ctx.beginPath(); ctx.ellipse(cx, cy, r*0.55, r*0.8, 0, 0, Math.PI*2);
-  ctx.fillStyle = bodyGrad; ctx.fill();
-  ctx.strokeStyle = `rgba(${Math.max(0,rr-50)},${Math.max(0,gg-50)},${Math.max(0,bb-40)},0.7)`;
-  ctx.lineWidth = 1; ctx.stroke();
-
-  // Stripes
-  for (let s = 0; s < 3; s++) {
-    const sy = cy - r*0.35 + s * r*0.35;
-    ctx.beginPath(); ctx.moveTo(cx - r*0.5, sy); ctx.lineTo(cx + r*0.5, sy);
-    ctx.strokeStyle = `rgba(${Math.max(0,rr-80)},${Math.max(0,gg-80)},${Math.max(0,bb-70)},0.35)`;
-    ctx.lineWidth = 1.5; ctx.stroke();
-  }
-
-  // Head
-  ctx.beginPath(); ctx.arc(cx, cy - r*0.72, r*0.34, 0, Math.PI*2);
-  ctx.fillStyle = `rgba(${Math.max(0,rr-30)},${Math.max(0,gg-30)},${Math.max(0,bb-20)},1)`;
-  ctx.fill();
-
-  // Antennae
-  for (const side of [-1, 1]) {
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - r);
-    ctx.quadraticCurveTo(cx + side*r*0.4, cy - r*1.3, cx + side*r*0.55, cy - r*1.5);
-    ctx.strokeStyle = `rgba(${Math.max(0,rr-50)},${Math.max(0,gg-50)},${Math.max(0,bb-40)},0.8)`;
-    ctx.lineWidth = 0.9; ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx + side*r*0.55, cy - r*1.5, r*0.1, 0, Math.PI*2);
-    ctx.fillStyle = '#fbbf24'; ctx.fill();
-  }
-
-  // Stinger
-  ctx.beginPath();
-  ctx.moveTo(cx, cy + r*0.8);
-  ctx.lineTo(cx - r*0.08, cy + r*1.05);
-  ctx.lineTo(cx + r*0.08, cy + r*1.05);
-  ctx.closePath();
-  ctx.fillStyle = `rgba(${Math.max(0,rr-50)},${Math.max(0,gg-50)},${Math.max(0,bb-40)},0.8)`;
-  ctx.fill();
-
-  // URL indicator
-  if (n.url) {
-    ctx.beginPath(); ctx.arc(cx + r*0.8, cy - r*0.8, 3.5, 0, Math.PI*2);
-    ctx.fillStyle = isHov ? '#fff' : '#fbbf24'; ctx.fill();
-  }
-
-  // Hover label
-  if (isHov) {
-    const label = n.url ? `${n.label} →` : n.label;
-    const fSize = 10;
-    ctx.font = `500 ${fSize}px 'DM Sans', sans-serif`;
-    const lw = ctx.measureText(label).width;
-    const lx = cx, ly = cy - r - 18;
-    ctx.fillStyle = `rgba(${rr},${gg},${bb},0.9)`;
-    ctx.beginPath(); ctx.roundRect(lx-lw/2-8, ly-fSize/2-4, lw+16, fSize+8, 3); ctx.fill();
-    const lum = rr*0.299 + gg*0.587 + bb*0.114;
-    ctx.fillStyle = lum > 170 ? '#2d1a5e' : '#fff';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(label, lx, ly);
-  }
-}
-
-/* ── Draw premium glass-orb node (kept as fallback) ── */
-function drawGem(n) {
-  const isHov = n === hoveredNode;
-  const isDrag = n === dragging;
-  const bob = isDrag ? 0 : Math.sin(t * 0.85 + n.phase) * 2;
-  const scale = isDrag ? 1.1 : (isHov ? 1.07 : 1);
-  const r = n.r * scale;
-  const cx = n.x, cy = n.y + bob;
-  const [rr, gg, bb] = hexToRgb(n.color);
-
-  /* 1 — Soft outer glow */
-  const glowR = r * (isHov ? 3.6 : 2.6);
-  const glow = ctx.createRadialGradient(cx, cy, r * 0.7, cx, cy, glowR);
-  glow.addColorStop(0, `rgba(${rr},${gg},${bb},${isHov ? 0.22 : 0.10})`);
-  glow.addColorStop(1, `rgba(${rr},${gg},${bb},0)`);
-  ctx.beginPath(); ctx.arc(cx, cy, glowR, 0, Math.PI*2);
-  ctx.fillStyle = glow; ctx.fill();
-
-  /* 2 — Frosted glass body */
-  const body = ctx.createRadialGradient(cx - r*0.28, cy - r*0.28, 0, cx + r*0.08, cy + r*0.08, r*1.1);
-  body.addColorStop(0,    'rgba(255,255,255,0.60)');
-  body.addColorStop(0.22, `rgba(${Math.min(255,rr+55)},${Math.min(255,gg+55)},${Math.min(255,bb+45)},0.32)`);
-  body.addColorStop(0.65, `rgba(${rr},${gg},${bb},0.16)`);
-  body.addColorStop(1,    `rgba(${Math.max(0,rr-25)},${Math.max(0,gg-25)},${Math.max(0,bb-15)},0.06)`);
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
-  ctx.fillStyle = body; ctx.fill();
-
-  /* 3 — Crisp coloured rim */
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
-  ctx.strokeStyle = `rgba(${rr},${gg},${bb},${n.type==='root' ? 0.85 : 0.60})`;
-  ctx.lineWidth = n.type === 'root' ? 2 : 1.3; ctx.stroke();
-
-  /* 4 — Top-arc glass shine (clipped) */
-  ctx.save();
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.clip();
-  const shine = ctx.createLinearGradient(cx - r*0.6, cy - r, cx + r*0.4, cy - r*0.05);
-  shine.addColorStop(0, 'rgba(255,255,255,0.50)');
-  shine.addColorStop(0.6, 'rgba(255,255,255,0.12)');
-  shine.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = shine; ctx.fillRect(cx-r, cy-r, r*2, r*0.9);
-  ctx.restore();
-
-  /* 5 — Sharp specular highlight */
-  const spec = ctx.createRadialGradient(cx - r*0.29, cy - r*0.36, 0, cx - r*0.16, cy - r*0.22, r*0.42);
-  spec.addColorStop(0, 'rgba(255,255,255,0.95)');
-  spec.addColorStop(0.45, 'rgba(255,255,255,0.28)');
-  spec.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.beginPath(); ctx.arc(cx - r*0.16, cy - r*0.22, r*0.42, 0, Math.PI*2);
-  ctx.fillStyle = spec; ctx.fill();
-
-  /* 6 — Hover / drag pulsing dashed ring */
-  if (isHov || isDrag) {
-    ctx.beginPath(); ctx.arc(cx, cy, r + 7 + Math.sin(t*3.5)*2.5, 0, Math.PI*2);
-    ctx.strokeStyle = `rgba(${rr},${gg},${bb},0.42)`;
-    ctx.lineWidth = 1.2; ctx.setLineDash([3,7]); ctx.stroke(); ctx.setLineDash([]);
-  }
-
-  /* 7 — URL dot */
-  if (n.url && !isHov) {
-    ctx.beginPath(); ctx.arc(cx + r*0.68, cy - r*0.68, 3.5, 0, Math.PI*2);
-    ctx.fillStyle = `rgba(${rr},${gg},${bb},0.85)`; ctx.fill();
-  }
-
-  /* 8 — Label: always below for root, pill on hover for leaf */
-  const showLabel = n.type === 'root' || isHov || isDrag;
-  if (showLabel) {
-    const label = (isHov || isDrag) && n.url ? `${n.label} →` : n.label;
-    const fSize = n.type === 'root' ? Math.max(11, n.r * 0.5) : Math.max(10, n.r * 0.62);
-    ctx.font = `${n.type === 'root' ? '600' : '500'} ${fSize}px 'DM Sans', sans-serif`;
-    const tw = ctx.measureText(label).width;
-    const lx = cx;
-
-    if (n.type === 'root') {
-      // Clean text below node, no pill
-      const ly = cy + r + 14;
-      ctx.fillStyle = `rgba(${rr},${gg},${bb},0.92)`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-      ctx.fillText(label, lx, ly);
-    } else {
-      // Floating pill above node
-      const ly = cy - r - 17;
-      ctx.fillStyle = `rgba(${rr},${gg},${bb},0.90)`;
-      ctx.beginPath(); ctx.roundRect(lx - tw/2 - 9, ly - fSize/2 - 4, tw + 18, fSize + 8, 3); ctx.fill();
-      const lum = rr * 0.299 + gg * 0.587 + bb * 0.114;
-      ctx.fillStyle = lum > 160 ? '#08061a' : '#ffffff';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(label, lx, ly);
-    }
-  }
-}
-
-/* ── Draw butterfly cursor ── */
-function drawButterfly() {
-  if (!bflyReady) return;
-  bfly.x += (mouse.x - bfly.x) * 0.12;
-  bfly.y += (mouse.y - bfly.y) * 0.12;
-
-  const cx = bfly.x, cy = bfly.y;
-  const isOver = hoveredNode !== null;
-  const scale = isOver ? 1.25 : 1;
-  const flutter = Math.sin(t * 9) * 0.5 + 0.5; // 0→1, wing open/close
-
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.scale(scale, scale);
-
-  const upperW = 16, upperH = 13;
-  const lowerW = 12, lowerH = 10;
-  const spread = 0.5 + flutter * 0.5; // wings close when flutter low
-
-  // Upper wings
-  for (const side of [-1, 1]) {
-    ctx.save();
-    ctx.scale(side * spread, 1);
-    // Outer upper wing shape
-    ctx.beginPath();
-    ctx.moveTo(0, -2);
-    ctx.bezierCurveTo(upperW*0.3, -upperH, upperW, -upperH*0.8, upperW, 2);
-    ctx.bezierCurveTo(upperW*0.4, upperH*0.3, upperW*0.1, upperH*0.1, 0, 2);
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(167,139,250,0.82)';
-    ctx.strokeStyle = 'rgba(109,40,217,0.55)'; ctx.lineWidth = 0.8;
-    ctx.fill(); ctx.stroke();
-    // Wing highlight
-    ctx.beginPath();
-    ctx.bezierCurveTo(upperW*0.35, -upperH*0.7, upperW*0.65, -upperH*0.5, upperW*0.55, 0);
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1; ctx.stroke();
-    ctx.restore();
-  }
-
-  // Lower wings
-  for (const side of [-1, 1]) {
-    ctx.save();
-    ctx.scale(side * spread * 0.9, 1);
-    ctx.beginPath();
-    ctx.moveTo(0, 2);
-    ctx.bezierCurveTo(lowerW*0.5, -lowerH*0.1, lowerW, lowerH*0.6, lowerW*0.5, lowerH);
-    ctx.bezierCurveTo(lowerW*0.2, lowerH*1.1, 0, lowerH*0.5, 0, 4);
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(139,92,246,0.75)';
-    ctx.strokeStyle = 'rgba(109,40,217,0.5)'; ctx.lineWidth = 0.7;
-    ctx.fill(); ctx.stroke();
-    ctx.restore();
-  }
-
-  // Body (golden, like the reference image)
-  const bodyGrad = ctx.createLinearGradient(0, -10, 0, 10);
-  bodyGrad.addColorStop(0, '#fde68a');
-  bodyGrad.addColorStop(1, '#d97706');
-  ctx.beginPath(); ctx.ellipse(0, 0, 2.5, 11, 0, 0, Math.PI*2);
-  ctx.fillStyle = bodyGrad; ctx.fill();
-  ctx.strokeStyle = '#92400e'; ctx.lineWidth = 0.6; ctx.stroke();
-
-  // Antennae
-  for (const side of [-1, 1]) {
-    ctx.beginPath();
-    ctx.moveTo(side * 1.5, -9);
-    ctx.quadraticCurveTo(side * 6, -18, side * 8, -20);
-    ctx.strokeStyle = '#d97706'; ctx.lineWidth = 1; ctx.stroke();
-    ctx.beginPath(); ctx.arc(side * 8, -20, 2, 0, Math.PI*2);
-    ctx.fillStyle = '#fde68a'; ctx.fill();
-  }
-
-  ctx.restore();
-}
-
-/* ── Main loop ── */
-function animate() {
-  t += 0.014;
-  ctx.clearRect(0, 0, W, H);
-
-  // Transparent canvas — CSS orbs show through
-  ctx.clearRect(0, 0, W, H);
-
-  // Subtle precision dot grid (data-viz feel)
-  const gs = 28;
-  ctx.fillStyle = 'rgba(60,40,160,0.055)';
-  for (let gx = gs / 2; gx < W; gx += gs) {
-    for (let gy = gs / 2; gy < H; gy += gs) {
-      ctx.beginPath(); ctx.arc(gx, gy, 0.85, 0, Math.PI*2); ctx.fill();
-    }
-  }
-
-  // Force tick
-  tickForce();
-
-  // KG links — curved arcs (Mid-Century organic flow)
-  for (const [sid,tid] of KG_LINKS) {
-    const s=nodeMap[sid],t2=nodeMap[tid]; if(!s||!t2) continue;
-    const mx=(s.x+t2.x)/2, my=(s.y+t2.y)/2;
-    const dx=t2.x-s.x, dy=t2.y-s.y, len=Math.sqrt(dx*dx+dy*dy)||1;
-    const bend = 28;
-    const cpx=mx-(dy/len)*bend, cpy=my+(dx/len)*bend;
-    // gradient link — source colour to target colour
-    const [srr,sgg,sbb]=hexToRgb(s.color);
-    const [trr,tgg,tbb]=hexToRgb(t2.color);
-    const lg=ctx.createLinearGradient(s.x,s.y,t2.x,t2.y);
-    lg.addColorStop(0,`rgba(${srr},${sgg},${sbb},0.38)`);
-    lg.addColorStop(1,`rgba(${trr},${tgg},${tbb},0.38)`);
-    ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.quadraticCurveTo(cpx,cpy,t2.x,t2.y);
-    ctx.strokeStyle=lg; ctx.lineWidth=1.5; ctx.lineCap='round'; ctx.stroke();
-  }
-
-  // Signals on KG links — flat dot, no gradient
-  for(let i=signals.length-1;i>=0;i--){
-    const sig=signals[i]; sig.progress+=sig.speed;
-    if(sig.progress>=1){signals.splice(i,1);continue;}
-    const sx=sig.s.x+(sig.t2.x-sig.s.x)*sig.progress;
-    const sy=sig.s.y+(sig.t2.y-sig.s.y)*sig.progress;
-    ctx.beginPath(); ctx.arc(sx,sy,4,0,Math.PI*2);
-    ctx.fillStyle=sig.s.color; ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=1; ctx.stroke();
-  }
-
-  // Divider
-  ctx.beginPath(); ctx.moveTo(W*0.47,H*0.1); ctx.lineTo(W*0.47,H*0.9);
-  ctx.strokeStyle='rgba(100,80,200,0.2)'; ctx.lineWidth=1;
-  ctx.setLineDash([3,12]); ctx.stroke(); ctx.setLineDash([]);
-
-  // Draw flowers (root) then bees (leaf) then butterfly
-  KG_NODES.forEach(n => {
-    if (n.type === 'root') drawFlower(n);
-    else drawBee(n);
-  });
-  drawButterfly();
-
-  requestAnimationFrame(animate);
 }
 
 resize();
-requestAnimationFrame(animate);
+initIconCanvases();
 </script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&display=swap');
 
-.hero-scene {
+.bio-hero {
   position: relative;
   width: 100%;
   height: 100vh;
-  min-height: 600px;
+  min-height: 640px;
   overflow: hidden;
-  cursor: none;
-  background: #f4f5f8;
+  background: #f5f4ef;
 }
 
-#neural-canvas {
+#bio-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  display: block;
 }
 
-.scene-left {
+/* ── Left headline block ── */
+.bio-headline {
   position: absolute;
   z-index: 10;
   top: 50%;
-  left: 3rem;
-  transform: translateY(-50%);
+  left: 4%;
+  transform: translateY(-62%);
   display: flex;
   flex-direction: column;
+  gap: 0;
   max-width: 340px;
-  pointer-events: none;
-  /* Glass morphism card */
-  background: rgba(255,255,255,0.58);
-  backdrop-filter: blur(28px) saturate(1.6);
-  -webkit-backdrop-filter: blur(28px) saturate(1.6);
-  border: 1px solid rgba(255,255,255,0.82);
-  padding: 2.4rem 2.8rem 2.6rem;
-  box-shadow:
-    0 2px 0 rgba(255,255,255,0.9) inset,
-    0 8px 40px rgba(50,35,110,0.08),
-    0 1px 3px rgba(50,35,110,0.06);
 }
 
-/* Editorial eyebrow label */
-.badge {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.bio-eyebrow {
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.57rem;
-  letter-spacing: 0.26em;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(45,30,110,0.55);
-  padding: 0;
-  border: none;
-  background: none;
-  margin-bottom: 1.1rem;
-  width: fit-content;
-}
-.badge::before {
-  content: '';
-  display: block;
-  width: 24px;
-  height: 1px;
-  background: rgba(69,113,234,0.6);
-  flex-shrink: 0;
-}
-
-/* Bauhaus: massive condensed type, flat colour, no gradient */
-.scene-left h1 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(4rem, 6.5vw, 7rem);
-  line-height: 0.88;
-  margin: 0 0 0.5rem;
-  color: #06041a;
-  font-weight: 400;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-/* Premium gradient accent bar under title */
-.scene-left h1::after {
-  content: '';
-  display: block;
-  width: 3.2rem;
-  height: 3px;
-  background: linear-gradient(90deg, #4571ea 0%, #9050e0 60%, rgba(144,80,224,0) 100%);
-  margin-top: 0.8rem;
+  color: rgba(17,17,40,0.5);
   margin-bottom: 1rem;
+  display: block;
 }
 
-.tagline {
-  font-family: 'DM Sans', sans-serif;
-  color: rgba(30,20,60,0.58);
-  font-size: 0.85rem;
-  line-height: 1.8;
-  margin: 0 0 1.8rem;
-  white-space: pre-line;
+.bio-headline h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3.6rem, 6.5vw, 5.8rem);
+  line-height: 0.90;
+  color: #111128;
+  margin: 0 0 1.6rem;
   letter-spacing: 0.02em;
 }
 
-/* Premium CTA button */
-.hero-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: linear-gradient(135deg, #4571ea, #7040d8);
-  color: #ffffff;
-  padding: 0.72rem 1.6rem;
-  border-radius: 0;
+.bio-cta {
+  display: inline-block;
+  background: #111128;
+  color: #f5f4ef;
+  padding: 0.65rem 1.6rem;
   font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
   font-weight: 600;
-  font-size: 0.78rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  width: fit-content;
-  margin-bottom: 1.4rem;
-  pointer-events: all;
-  transition: opacity 0.18s, transform 0.18s;
-  border: none;
-  box-shadow: 0 4px 20px rgba(69,113,234,0.35);
-}
-.hero-cta:hover {
-  opacity: 0.88;
-  transform: translateY(-1px);
   text-decoration: none;
-  cursor: pointer;
+  width: fit-content;
+  transition: background 0.15s, color 0.15s;
+}
+.bio-cta:hover {
+  background: #1d8a78;
   color: #fff;
 }
 
-.graph-hint {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.68rem;
-  color: rgba(30,20,60,0.38);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  animation: hint-fade 2.5s ease-in-out infinite;
-  margin: 0;
-}
-@keyframes hint-fade { 0%,100%{opacity:.25} 50%{opacity:.85} }
-
-/* ── regi.it-style gradient orbs ── */
-.orb {
+/* ── Floating illustration label ── */
+.bio-float-label {
   position: absolute;
-  border-radius: 50%;
+  z-index: 10;
+  top: 13%;
+  left: 53%;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
   pointer-events: none;
-  will-change: transform;
-  filter: blur(80px);
-  z-index: 0;
+}
+.bio-float-label::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 1px;
+  background: rgba(255,255,255,0.5);
+  vertical-align: middle;
+  margin-right: 0.5rem;
 }
 
-/* Pink / magenta — top-left */
-.orb-1 {
-  width: 860px; height: 860px;
-  background: radial-gradient(circle at 40% 40%, rgba(255,3,139,0.42) 0%, rgba(200,40,130,0.15) 45%, transparent 70%);
-  top: -280px; left: -180px;
-  animation: orb-drift-1 22s ease-in-out infinite;
+/* ── Feature strip ── */
+.bio-strip {
+  position: absolute;
+  z-index: 10;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
 }
 
-/* Blue → orange — bottom-right */
-.orb-2 {
-  width: 780px; height: 780px;
-  background: radial-gradient(circle at 60% 60%, rgba(69,113,234,0.48) 0%, rgba(234,113,69,0.18) 55%, transparent 70%);
-  bottom: -220px; right: -140px;
-  animation: orb-drift-2 28s ease-in-out infinite;
+.bio-feat {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.2rem 1.6rem;
+  text-decoration: none;
+  border-top: 3px solid var(--fc);
+  background: rgba(17,17,40,0.92);
+  transition: background 0.18s;
+  overflow: hidden;
+}
+.bio-feat:hover {
+  background: rgba(28,28,55,0.98);
+}
+.bio-feat + .bio-feat {
+  border-left: 1px solid rgba(255,255,255,0.07);
 }
 
-/* Cyan / teal — centre-right area */
-.orb-3 {
-  width: 680px; height: 680px;
-  background: radial-gradient(circle at 50% 40%, rgba(79,202,247,0.52) 0%, rgba(50,160,210,0.12) 50%, transparent 70%);
-  top: 15%; left: 42%;
-  animation: orb-drift-3 19s ease-in-out infinite;
+.bio-feat-icon {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
 }
 
-@keyframes orb-drift-1 {
-  0%,100% { transform: translate(0,0) scale(1); }
-  33%     { transform: translate(100px, 70px) scale(1.08); }
-  66%     { transform: translate(-50px, 110px) scale(0.96); }
-}
-@keyframes orb-drift-2 {
-  0%,100% { transform: translate(0,0) scale(1); }
-  40%     { transform: translate(-90px,-55px) scale(1.06); }
-  70%     { transform: translate(70px,-90px) scale(0.94); }
-}
-@keyframes orb-drift-3 {
-  0%,100% { transform: translate(0,0) scale(1); }
-  50%     { transform: translate(-65px, 55px) scale(1.1); }
+.bio-feat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
 }
 
+.bio-feat-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f5f4ef;
+}
+
+.bio-feat-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.62rem;
+  color: rgba(245,244,239,0.45);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bio-learn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fc);
+  margin-top: 0.2rem;
+}
+
+/* ── Responsive ── */
 @media (max-width: 700px) {
-  .scene-left { left: 1.2rem; right: 1.2rem; max-width: 100%; transform: translateY(-65%); padding: 1.8rem 2rem; }
-  .scene-left h1 { font-size: 3.5rem; }
+  .bio-headline { left: 1.5rem; max-width: 260px; transform: translateY(-70%); }
+  .bio-headline h1 { font-size: 3rem; }
+  .bio-strip { grid-template-columns: 1fr; height: auto; position: relative; bottom: auto; }
+  .bio-hero { height: auto; min-height: 100svh; }
 }
 </style>
