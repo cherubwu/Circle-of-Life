@@ -4,15 +4,22 @@ import BaseHead from '../../../components/BaseHead.astro';
 import Header from '../../../components/Header.astro';
 import Footer from '../../../components/Footer.astro';
 
+const base = '/Circle-of-Life';
+
 export async function getStaticPaths() {
-  const posts = await getCollection('blog', ({ data }) => data.lang === 'zh');
-  return posts.map(post => ({
+  const posts = (await getCollection('blog', ({ data }) => data.lang === 'zh'))
+    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+  return posts.map((post, index) => ({
     params: { slug: post.id },
-    props: { post },
+    props: {
+      post,
+      prev: posts[index + 1] ?? null,
+      next: posts[index - 1] ?? null,
+    },
   }));
 }
 
-const { post } = Astro.props;
+const { post, prev, next } = Astro.props;
 const { Content } = await render(post);
 const dateStr = post.data.pubDate.toLocaleDateString('zh-CN');
 ---
@@ -43,6 +50,22 @@ const dateStr = post.data.pubDate.toLocaleDateString('zh-CN');
         <Content />
       </div>
     </article>
+
+    <nav class="post-nav">
+      {prev
+        ? <a href={`${base}/zh/blog/${prev.id}/`} class="post-nav-link post-nav-prev">
+            <span class="post-nav-label">← 上一篇</span>
+            <span class="post-nav-title">{prev.data.title}</span>
+          </a>
+        : <span></span>
+      }
+      {next &&
+        <a href={`${base}/zh/blog/${next.id}/`} class="post-nav-link post-nav-next">
+          <span class="post-nav-label">下一篇 →</span>
+          <span class="post-nav-title">{next.data.title}</span>
+        </a>
+      }
+    </nav>
   </main>
   <Footer />
 </body>
@@ -89,5 +112,54 @@ const dateStr = post.data.pubDate.toLocaleDateString('zh-CN');
   box-shadow: 6px 6px 0 #000;
   display: block;
   margin: 2rem 0;
+}
+
+/* ── Prev / Next ── */
+.post-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 2px solid #000;
+}
+.post-nav-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  text-decoration: none;
+  max-width: 46%;
+  padding: 1rem 1.2rem;
+  border: 2px solid #000;
+  background: #fff;
+  box-shadow: 4px 4px 0 #000;
+  transition: background 0.12s, transform 0.12s, box-shadow 0.12s;
+}
+.post-nav-link:hover {
+  background: #000;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 #000;
+}
+.post-nav-link:hover .post-nav-label,
+.post-nav-link:hover .post-nav-title { color: #F2EFE6; }
+.post-nav-next { align-items: flex-end; text-align: right; }
+.post-nav-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  color: rgba(0,0,0,0.42);
+  transition: color 0.12s;
+}
+.post-nav-title {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 0.9rem;
+  color: #000;
+  line-height: 1.2;
+  transition: color 0.12s;
+}
+@media (max-width: 600px) {
+  .post-nav { flex-direction: column; }
+  .post-nav-link { max-width: 100%; }
+  .post-nav-next { align-items: flex-start; text-align: left; }
 }
 </style>

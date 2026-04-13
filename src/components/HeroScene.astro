@@ -37,9 +37,14 @@ const cards = lang === 'zh'
         {lang === 'zh' ? '— 生物创新 · 代谢 · 神经科学' : '— BIOINNOVATION · METABOLISM · NEUROSCIENCE'}
       </span>
       <h1>{headline.map(l => <>{l}<br/></>)}</h1>
-      <a href="https://your-substack.substack.com" target="_blank" class="bio-cta">
-        {lang === 'zh' ? '订阅周刊 →' : 'SUBSCRIBE →'}
-      </a>
+      <form
+        class="subscribe-form"
+        action="https://formspree.io/f/REPLACE_WITH_YOUR_ID"
+        method="POST"
+      >
+        <input type="email" name="email" placeholder={lang === 'zh' ? '输入邮箱' : 'your@email.com'} required class="subscribe-input" />
+        <button type="submit" class="bio-cta">{lang === 'zh' ? '订阅 →' : 'SUBSCRIBE →'}</button>
+      </form>
     </div>
 
     <!-- Right: floating organ illustration -->
@@ -136,16 +141,36 @@ const cards = lang === 'zh'
   margin: 0 0 2.4rem;
 }
 
+.subscribe-form {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  width: fit-content;
+}
+.subscribe-input {
+  background: #fff;
+  border: 2.5px solid #000;
+  border-right: none;
+  padding: 0.75rem 1rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  color: #000;
+  outline: none;
+  width: 200px;
+}
+.subscribe-input::placeholder { color: rgba(0,0,0,0.35); }
+.subscribe-input:focus { border-color: #E61E8D; }
 .bio-cta {
   display: inline-block;
   background: #000;
   color: #F2EFE6;
-  padding: 0.75rem 2rem;
+  padding: 0.75rem 1.5rem;
   font-family: 'Archivo Black', sans-serif;
   font-size: 0.8rem;
   letter-spacing: 0.12em;
   text-decoration: none;
-  width: fit-content;
+  border: none;
+  cursor: pointer;
   box-shadow: 6px 6px 0 #E61E8D;
   transition: transform 0.15s, box-shadow 0.15s;
 }
@@ -154,6 +179,9 @@ const cards = lang === 'zh'
   box-shadow: 9px 9px 0 #E61E8D;
   color: #F2EFE6;
   text-decoration: none;
+}
+@media (max-width: 780px) {
+  .subscribe-input { width: 150px; }
 }
 
 /* ── Right: illustration collage ── */
