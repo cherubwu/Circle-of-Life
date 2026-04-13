@@ -1,0 +1,152 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../../components/BaseHead.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+
+const base = '/Circle-of-Life';
+const KEYWORDS = ['脑机接口','神经科学','神经','brain','bci','neuroscience','alzheimer','parkinson','neuromod','认知','认知科学'];
+
+function inCategory(post: any, keywords: string[]) {
+  const tags = (post.data.tags ?? []).map((t: string) => t.toLowerCase());
+  return tags.some((t: string) => keywords.some(k => t.includes(k.toLowerCase())));
+}
+
+const posts = (await getCollection('blog', ({ data }) => data.lang === 'zh'))
+  .filter(p => inCategory(p, KEYWORDS))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+<html lang="zh">
+<head>
+  <BaseHead title="神经科学 — 生之回环" description="脑机接口、阿尔茨海默、神经调控与脑科学前沿文章。" />
+</head>
+<body>
+  <Header />
+  <main>
+    <header class="cat-hero" style="border-top: 6px solid #EF5B5B">
+      <a href={`${base}/zh/`} class="back-link">← 返回</a>
+      <h1 class="cat-title">神经科学</h1>
+      <p class="cat-sub">脑机接口 · 认知 · 神经调控 · 阿尔茨海默</p>
+    </header>
+
+    {posts.length === 0
+      ? <p class="empty">即将上线，敬请期待。</p>
+      : <ul class="article-list">
+          {posts.map(post => (
+            <li class="article-row">
+              <a href={`${base}/zh/blog/${post.id}/`} class="article-link">
+                <div class="article-info">
+                  <span class="article-date">
+                    {post.data.pubDate.toLocaleDateString('zh-CN')}
+                  </span>
+                  <h2 class="article-title">{post.data.title}</h2>
+                  {post.data.description && <p class="article-desc">{post.data.description}</p>}
+                </div>
+                <div class="article-tags">
+                  {post.data.tags?.map(tag => <span class="tag">{tag}</span>)}
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+    }
+  </main>
+  <Footer />
+</body>
+</html>
+
+<style>
+.cat-hero {
+  margin-bottom: 3rem;
+  padding: 2rem 0 1.5rem;
+  border-bottom: 2px solid #000;
+}
+.back-link {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.45);
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 1.2rem;
+}
+.back-link:hover { color: #000; }
+.cat-title {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  color: #000;
+  margin: 0 0 0.5rem;
+  line-height: 1;
+}
+.cat-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  color: rgba(0,0,0,0.5);
+  margin: 0;
+  letter-spacing: 0.06em;
+}
+.empty {
+  font-family: 'DM Sans', sans-serif;
+  color: rgba(0,0,0,0.4);
+  font-size: 0.9rem;
+  padding: 2rem 0;
+}
+.article-list { list-style: none; padding: 0; margin: 0; }
+.article-row { border-bottom: 2px solid #000; }
+.article-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 1.6rem 0;
+  text-decoration: none;
+  transition: background 0.12s;
+}
+.article-link:hover { background: #000; padding-left: 1rem; padding-right: 1rem; margin: 0 -1rem; }
+.article-link:hover .article-date,
+.article-link:hover .article-title,
+.article-link:hover .article-desc { color: #F2EFE6; }
+.article-link:hover .tag { background: #F2EFE6; color: #000; }
+.article-info { flex: 1; }
+.article-date {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  color: rgba(0,0,0,0.42);
+  display: block;
+  margin-bottom: 0.5rem;
+  transition: color 0.12s;
+}
+.article-title {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+  line-height: 1.15;
+  color: #000;
+  margin: 0 0 0.5rem;
+  border: none;
+  padding: 0;
+  transition: color 0.12s;
+}
+.article-desc {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  color: rgba(0,0,0,0.55);
+  margin: 0;
+  line-height: 1.6;
+  transition: color 0.12s;
+}
+.article-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: flex-start;
+  flex-shrink: 0;
+  max-width: 240px;
+  padding-top: 0.2rem;
+}
+@media (max-width: 600px) {
+  .article-link { flex-direction: column; }
+  .article-tags { max-width: 100%; }
+}
+</style>
