@@ -35,16 +35,13 @@ const zhUrl = pairedZh ? `${base}/zh/blog/${pairedZh.id}/` : null;
   <BaseHead title={post.data.title} description={post.data.description} />
 </head>
 <body>
-  <Header />
+  <Header pairUrl={zhUrl ?? undefined} />
   <main>
     <article>
       <header class="article-header">
         <div class="article-meta-top">
           <span class="article-date">{dateStr}</span>
           {post.data.author && <span class="article-author"> — {post.data.author}</span>}
-          {zhUrl && (
-            <a href={zhUrl} class="lang-pill">中文</a>
-          )}
         </div>
         <h1>{post.data.title}</h1>
         {post.data.tags?.length > 0 && (
@@ -97,22 +94,6 @@ const zhUrl = pairedZh ? `${base}/zh/blog/${pairedZh.id}/` : null;
   margin-bottom: 1rem;
 }
 .article-author { color: #E61E8D; font-weight: 600; }
-
-.lang-pill {
-  display: inline-block;
-  margin-left: 0.8rem;
-  padding: 0.15em 0.6em;
-  font-size: 0.6rem;
-  letter-spacing: 0.12em;
-  font-family: 'DM Sans', sans-serif;
-  background: #000;
-  color: #F7E623;
-  text-decoration: none;
-  border: 1.5px solid #000;
-  transition: background 0.12s, color 0.12s;
-  vertical-align: middle;
-}
-.lang-pill:hover { background: #F7E623; color: #000; }
 
 .article-header h1 {
   font-family: 'Archivo Black', sans-serif;
