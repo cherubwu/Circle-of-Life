@@ -181,6 +181,22 @@ Drawing from the critical framework developed in ongoing scientific discussion, 
 
 ---
 
+## Accepting Irreversibility: The Frame the Industry Resists
+
+There is a distinction the longevity industry consistently blurs: the difference between *studying the biology of ageing* and *reversing ageing itself*.
+
+The mechanistic case for the former is genuinely strong. We have identified molecular levers — senescent cell burden, mTOR activity, epigenetic drift — that are causally linked to tissue decline and that can be partially moved by pharmacological means. This is real biology, and the work deserves serious investment.
+
+But the claim that ageing, at the systemic level, is *reversible* rests on shakier ground. Ageing is not a single molecular event. It is the cumulative result of decades of stochastic damage — telomere attrition, somatic mutations, protein aggregation, mitochondrial dysfunction, glial scarring, vascular remodelling — playing out across trillions of cells in a system of extraordinary complexity. The second law of thermodynamics does not offer exceptions for wealthy investors.
+
+Partial reprogramming does not undo 70 years of accumulated somatic mutations or replace worn arterial walls. It resets certain methylation patterns in certain cell types — an impressive molecular trick, but not the same as reversing a human being.
+
+**The realistic goal, then, is not immortality. It is compression of morbidity.** Keeping people functional, cognitively intact, and independent for as long as possible before a relatively brief terminal decline. This is achievable in principle. It is what the DunedinPACE data actually points toward. And it is a profoundly different ambition than the Silicon Valley narrative of "defeating death."
+
+Pursuing immortality as a framing is not just scientifically premature — it is likely counterproductive. It attracts capital toward dramatic, unproven claims and away from the less glamorous but more tractable work of helping people age well. The biology is worth exploring. The ideology of unlimited lifespan extension is a distraction from it.
+
+---
+
 ## A Sober Assessment
 
 **Is ageing research worth doing?** Unambiguously yes. The mechanistic biology is real, the disease burden is enormous, and several drug mechanisms now have genuine pharmacological handles. This is serious cell biology — not pseudoscience.
