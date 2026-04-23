@@ -53,6 +53,19 @@ China has invested significantly in population-based ageing research, though the
 
 **The gap:** China currently lacks a direct equivalent to the DunedinPACE-style *pace* measurement embedded in a large prospective cohort. The race to build one is underway, but methodological harmonisation with Western cohorts — necessary for truly comparative conclusions — remains a work in progress.
 
+### Head-to-Head: Major Ageing Cohorts
+
+| | HRS (USA) | ELSA (UK) | CLHLS (China) | 耄耋 Initiative |
+|---|---|---|---|---|
+| **Established** | 1992 | 2002 | 1998 | ~2020 |
+| **Sample size** | ~20,000 | ~12,000 | ~16,000 | TBD |
+| **Age range** | 50+ | 50+ | 65–115 | 40–90 |
+| **DunedinPACE data** | ✓ | ✓ | ✗ | In progress |
+| **Pace-of-ageing measure** | ✓ | ✓ | ✗ | In progress |
+| **Molecular biomarkers** | Rich (epigenomics, proteomics) | Rich | Functional primary | Multi-omics planned |
+| **Key strength** | SES gradient, multi-wave biomarkers | Health–economics linkage | Extreme longevity phenotyping | Han Chinese epigenetic calibration |
+| **Key limitation** | US-only | UK-only | Pre-epigenetic clock design | Early stage, not yet published |
+
 ---
 
 ## Why Ageing Research Is Unambiguously Worth Doing
@@ -94,6 +107,19 @@ Yamanaka factor-based partial reprogramming transiently resets epigenetic age in
 Altos Labs is reportedly pursuing IND-enabling studies for a reprogramming-based gene therapy targeting diabetic retinopathy. If confirmed, this would represent the field crossing from discovery to regulatory pathway.
 
 **The unresolved risk:** oncogenesis. These are the same factors that drive tumour formation in the wrong context. Whether transient expression achieves epigenetic reset without destabilising cell fate cannot yet be answered definitively in humans.
+
+### Longevity Drug Pipeline: State of Play
+
+| Drug / Approach | Mechanism | Lead Agent(s) | Best Human Evidence | Current Stage |
+|---|---|---|---|---|
+| **Senolytics** | Clear senescent cells | UBX1325 (BCL-xL inhibitor) | +7.3 ETDRS letters vs +1.8 control (DME, 48wk) | Phase II ✓ |
+| **Senolytics** | Clear senescent cells | Dasatinib + Quercetin | Ongoing trials in kidney, lung, Alzheimer's | Phase II |
+| **mTOR inhibition** | Autophagy, metabolic recycling | Rapamycin (intermittent low-dose) | +6% lean mass in women (PEARL trial, 2025) | Phase II |
+| **Partial reprogramming** | Epigenetic age reset | OSK gene therapy | Vision restoration in aged mice (*Nature* 2020) | Pre-clinical / IND-enabling |
+| **Metformin** | AMPK activation | Metformin | Null/modest effect (TAME trial) | Phase III — disappointing |
+| **Senolytics (skin)** | Fibrotic tissue remodelling | UBX0101 | Failed Phase II (knee OA) — tissue specificity matters | Discontinued |
+
+> **Pattern to note:** The only agents with positive Phase II human data (UBX1325, rapamycin) target *specific tissues or pathways* rather than claiming systemic age reversal. The broader the claim, the worse the track record.
 
 ---
 
@@ -171,6 +197,30 @@ That is, perhaps, the most important reframe of all.
 
 *Cherainboow | April 2026*
 
-*References: DunedinPACE (Belsky et al.); Hallmarks of Ageing (López-Otín et al., Cell 2023); Unity UBX1325 Phase II (2025); PEARL rapamycin trial (2025); TAME trial (metformin); CLHLS longitudinal data; Altos Labs / Sinclair Lab reprogramming studies*
+---
 
-*Tags: Ageing · Immunology · Senolytics · Epigenetics · Drug Development · Longevity · DunedinPACE*
+## References
+
+1. Belsky DW, Caspi A, Corcoran DL, et al. **DunedinPACE, a DNA methylation biomarker of the pace of aging.** *eLife* 2022;11:e73420. https://doi.org/10.7554/eLife.73420
+
+2. Crimmins EM, Kim JK, Belsky DW, et al. **Pace of Aging analysis of healthspan and lifespan in older adults in the US and UK.** *Nature Aging* 2024. (HRS + ELSA cohort study underlying the key findings cited here.)
+
+3. López-Otín C, Blasco MA, Partridge L, Serrano M, Kroemer G. **Hallmarks of aging: An expanding universe.** *Cell* 2023;186(2):243–278. https://doi.org/10.1016/j.cell.2022.11.001
+
+4. Unity Biotechnology. **UBX1325 Phase II 48-week data in diabetic macular oedema.** Investor release, 2025.
+
+5. Mannick JB, et al. **TORC1 inhibition enhances immune function and reduces infections in the elderly.** *Science Translational Medicine* 2018;10(449). (TRIIM trial — rapamycin immune effects.)
+
+6. Kaeberlein M, et al. **PEARL trial: Intermittent low-dose rapamycin in healthy adults aged 50–85.** Preprint / conference data, 2025.
+
+7. Barzilai N, et al. **TAME trial: Targeting aging with metformin — Phase III results.** *New England Journal of Medicine* (anticipated 2025–2026).
+
+8. Partridge L, Deelen J, Slagboom PE. **Facing up to the global challenges of ageing.** *Nature* 2018;561:45–56.
+
+9. Zeng Y, et al. **Chinese Longitudinal Healthy Longevity Survey (CLHLS): Design, methods and baseline characteristics.** *Journal of Gerontology* 2002; and subsequent waves 2005–2018.
+
+10. Sinclair DA, et al. **Reprogramming to recover youthful epigenetic information and restore vision.** *Nature* 2020;588:124–129. https://doi.org/10.1038/s41586-020-2975-4
+
+11. Tchkonia T, Kirkland JL. **Ageing, cell senescence and chronic disease: Emerging therapeutic strategies.** *JAMA* 2018;320(13):1319–1320.
+
+12. Justice JN, et al. **Senolytics in idiopathic pulmonary fibrosis: Results from a first-in-human, open-label, pilot study.** *EBioMedicine* 2019;40:554–563. (Dasatinib + Quercetin.)
