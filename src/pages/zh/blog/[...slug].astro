@@ -35,7 +35,7 @@ const enUrl = pairedEn ? `${base}/blog/${pairedEn.id}/` : null;
   <BaseHead title={post.data.title} description={post.data.description} />
 </head>
 <body>
-  <Header pairUrl={enUrl ?? undefined} />
+  <Header lang="zh" pairUrl={enUrl ?? undefined} />
   <main>
     <article>
       <header class="article-header">

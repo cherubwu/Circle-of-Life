@@ -1,10 +1,11 @@
 ---
 interface Props {
   pairUrl?: string; // URL of the same article in the other language
+  lang?: 'en' | 'zh';
 }
-const { pairUrl } = Astro.props;
+const { pairUrl, lang: langProp } = Astro.props;
 
-const lang = Astro.currentLocale ?? 'en';
+const lang = langProp ?? (Astro.currentLocale as 'en' | 'zh') ?? 'en';
 const nav = lang === 'zh'
   ? { blog: '文章', about: '关于', subscribe: '订阅' }
   : { blog: 'Articles', about: 'About', subscribe: 'Subscribe' };

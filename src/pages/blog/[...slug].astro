@@ -35,7 +35,7 @@ const zhUrl = pairedZh ? `${base}/zh/blog/${pairedZh.id}/` : null;
   <BaseHead title={post.data.title} description={post.data.description} />
 </head>
 <body>
-  <Header pairUrl={zhUrl ?? undefined} />
+  <Header lang="en" pairUrl={zhUrl ?? undefined} />
   <main>
     <article>
       <header class="article-header">
