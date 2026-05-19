@@ -120,6 +120,8 @@ Since "brain science and brain-inspired research" was designated a national prio
 
 **2025 milestone:** The *Implementation Opinions on Promoting Innovation and Development of the Brain-Computer Interface Industry* (July 2025) sets explicit development targets — BCI has officially moved from lab research to industrial deployment.
 
+**2026 milestone:** In March 2026, China approved the **world's first commercial brain implant** — becoming the first country to grant commercial regulatory clearance for an invasive BCI (*Nature*, 19 May 2026). The government has set explicit targets: major technical breakthroughs by 2027, and 2–3 world-class BCI firms by the end of the decade.
+
 ### 2. Real Clinical Progress: A Billing Framework Takes Shape
 
 **Non-invasive fitting:** Provinces including Hubei, Jiangsu, and Shanghai have established official pricing:
@@ -138,6 +140,33 @@ Since "brain science and brain-inspired research" was designated a national prio
 **Strengths:** Strong engineering for non-invasive BCI; high policy certainty from top-down government design; abundant clinical resources.
 
 **Challenges:** Core chips (BCI processors, BLE chips) and high-precision sensors remain the primary upstream bottlenecks.
+
+### 4. Case Studies: AI-Powered BCIs at the Frontier
+
+> *Source: Nature, 19 May 2026*
+
+**Integrating large language models into BCI devices has become the defining technical shift.** LLMs decode neural activity with significantly higher accuracy than conventional signal-processing methods, according to Li Haifeng, a neuro-computing scientist at Harbin Institute of Technology. Two Chinese start-ups represent the leading edge of this approach.
+
+---
+
+#### NeuroXess (Shanghai)
+
+- **Implant design:** Electrodes placed on the cortical surface (no deep penetration), connected via wire to a combined data transmitter and battery implanted in the chest
+- **Motor control:** A 28-year-old man with spinal cord injury controlled home appliances via cursor movement with his thoughts (October 2025 trial)
+- **Speech decoding breakthrough:** An LLM-powered Mandarin decoder achieves **300 characters per minute** — faster than the average Mandarin speaking rate of ~220 characters per minute. A 35-year-old woman with epilepsy participated in this trial; papers are being prepared for submission.
+- **Co-founder and Chief Scientist:** Tiger Tao
+
+#### Maschine Robot (Beijing)
+
+A showcase for China–US BCI collaboration:
+
+- **Academic partners:** MIT Human–Computer Interaction Laboratory + Stanford Cognitive and Systems Neuroscience Laboratory; research centers in both Beijing and Boston
+- **Neural activity database:** Built over five years, specifically to address the challenge that "one person's neural activity varies from another's," making large, diverse training datasets difficult to assemble (Tony Zhang, co-founder)
+- **Upcoming product:** A BCI-driven smart wheelchair for patients with ALS (amyotrophic lateral sclerosis), targeting launch in **June 2026**
+  - Headband captures brain activity; eye-direction tracking confirms intent; AI directs wheelchair movement
+  - Series of clinical trials completed in partnership with Peking Union Medical College Hospital, Beijing
+
+> **Why does China–US collaboration matter?** The BCI field has very few researchers globally, and capabilities are distributed unevenly — China's large patient population enables BCI application to a wider range of neurological disorders, while US researchers have advantages in original innovation (Christian Herff, neural engineer, Maastricht University). Collaboration compresses the timeline for the whole field.
 
 ---
 
@@ -189,7 +218,7 @@ Since 2024, the industry has entered **BCI 3.0**, defined by the convergence of 
 |------|---------|
 | **Technical underperformance** | Multidisciplinary complexity; sensing and decoding breakthroughs may be delayed |
 | **Commercialization timeline** | Stringent approval standards, long clinical cycles, significant capital requirements |
-| **Ethics and legal exposure** | BCI touches thought-data directly; privacy and ethical frameworks are still evolving |
+| **Ethics and legal exposure** | BCI touches thought-data directly; privacy and ethical frameworks are still evolving. China released BCI ethical guidelines in 2024 (written consent + ethics-board approval required), but the AI-augmented "data flywheel" — where device access to personal data improves technology, building user trust that generates more data — creates a self-reinforcing dynamic that regulation must keep pace with |
 
 ---
 
