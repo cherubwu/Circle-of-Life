@@ -15,7 +15,7 @@ for(const lang of ['en','zh'])for(const width of [1440,390]){
  // Arithmetic must distinguish composition from within-cell change.
  await setRange(page.locator('#leanImm'),'20');await setRange(page.locator('#obeseImm'),'60');await setRange(page.locator('#cellChange'),'0');
  if(await page.locator('#leanMean').innerText()!=='3.20'||await page.locator('#obeseMean').innerText()!=='5.60')throw Error('Composition default');
- await setRange(page.locator('#cellChange'),'2');if(await setRange(page.locator('#obeseMean').innerText()!=='7.60')throw Error('Composition change');await page.locator('#cellChange'),'0');
+ await setRange(page.locator('#cellChange'),'2');if(await page.locator('#obeseMean').innerText()!=='7.60')throw Error('Composition change');await setRange(page.locator('#cellChange'),'0');
  await page.locator('#compositionBars').scrollIntoViewIfNeeded();await page.screenshot({path:`screenshots/${lang}-${width}-interactive.png`});
  // Every slider gets both endpoints, and its rendered output must change.
  for(const input of await page.locator('input[type=range]').all()){
