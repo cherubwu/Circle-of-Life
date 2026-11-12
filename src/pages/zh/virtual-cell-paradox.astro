@@ -1,0 +1,20 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import articleHtml from '../../data/virtual-cell-paradox-article.html?raw';
+---
+<html lang="zh">
+<head>
+  <BaseHead title="The Virtual Cell Paradox | 生之回环" description="如果生命最终仍要在真实世界里检验，我们为什么还要建造虚拟细胞？一篇有交互实验、2025–2026 论文讨论、跨物种与数据质量审视的科学长文。" />
+  <link rel="stylesheet" href="/Circle-of-Life/virtual-cell-paradox/essay.css" />
+</head>
+<body>
+  <Header lang="zh" pairUrl="/Circle-of-Life/virtual-cell-paradox/" />
+  <div id="vcp-root" class="light">
+    <Fragment set:html={articleHtml} />
+  </div>
+  <Footer />
+  <script is:inline src="/Circle-of-Life/virtual-cell-paradox/essay.js" defer></script>
+</body>
+</html>

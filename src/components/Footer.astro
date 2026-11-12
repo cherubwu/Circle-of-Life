@@ -1,4 +1,6 @@
 ---
+const zh = Astro.currentLocale === 'zh';
+const root = zh ? '/Circle-of-Life/zh' : '/Circle-of-Life';
 const year = new Date().getFullYear();
 ---
 <footer>
@@ -8,13 +10,13 @@ const year = new Date().getFullYear();
       <span class="footer-tagline">生之回环</span>
     </div>
     <div class="footer-links">
-      <a href="/Circle-of-Life/blog">Articles</a>
-      <a href="/Circle-of-Life/about">About</a>
-      <a href="https://your-substack.substack.com" target="_blank">Subscribe</a>
+      <a href={`${root}/blog`}>{zh ? '文章' : 'Articles'}</a>
+      <a href={`${root}/about`}>{zh ? '关于' : 'About'}</a>
+      <a href="https://your-substack.substack.com" target="_blank">{zh ? '订阅' : 'Subscribe'}</a>
     </div>
     <div class="footer-copy">
       <p>© {year} Circle of Life · 生之回环</p>
-      <p class="footer-disclaimer">内容仅供学术交流，不构成投资建议。</p>
+      <p class="footer-disclaimer">{zh ? '内容仅供学术交流，不构成投资建议。' : 'For academic discussion only; not investment advice.'}</p>
     </div>
   </div>
   <div class="footer-bar">

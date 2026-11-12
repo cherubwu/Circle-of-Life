@@ -1,0 +1,41 @@
+---
+interface Props { lang?: 'zh'|'en' }
+const { lang = 'zh' } = Astro.props;
+const zh = lang === 'zh';
+---
+<section class="featured-science" aria-label={zh ? '精选科学长文' : 'Featured science essay'}>
+  <div class="feature-number">SPECIAL EDITION / 2026  ✳</div>
+  <div class="feature-grid">
+    <div class="feature-copy">
+      <span class="feature-tag">{zh ? '交互式科学长文 · 精选' : 'INTERACTIVE SCIENCE ESSAY'}</span>
+      <h2>THE VIRTUAL<br/><span>CELL</span> PARADOX.</h2>
+      <p>{zh ? '一亿个细胞，可以教会 AI 多少关于生命的事？从基因扰动到临床验证，一场不打算轻易相信漂亮预测的探索。' : 'Can we predict life without understanding it? An interactive investigation of biological atlases, perturbations and the road to clinical reality.'}</p>
+      <a href={zh ? "/Circle-of-Life/zh/virtual-cell-paradox/" : "/Circle-of-Life/virtual-cell-paradox/"} class="feature-link">{zh ? '进入文章，亲手做几场模拟实验 ↗' : 'EXPLORE THE ESSAY ↗'}</a>
+    </div>
+    <div class="feature-art" aria-hidden="true">
+      <div class="orb"><span>DNA</span><span>RNA</span><span>CELL?</span></div>
+      <div class="feature-caption">OBSERVED ≠ UNDERSTOOD</div>
+      <div class="feature-dot dot-a"></div><div class="feature-dot dot-b"></div><div class="feature-dot dot-c"></div>
+    </div>
+  </div>
+</section>
+<style>
+.featured-science{max-width:1200px;margin:2rem auto 5rem;padding:0 4vw;font-family:'DM Sans',sans-serif}
+.feature-number{font-size:.62rem;letter-spacing:.2em;font-weight:800;margin-bottom:15px}
+.feature-grid{display:grid;grid-template-columns:1.3fr 1fr;border:3px solid #000;box-shadow:10px 10px 0 #000;overflow:hidden;background:#fff}
+.feature-copy{padding:clamp(22px,4vw,65px);align-self:center}
+.feature-tag{display:inline-block;background:#E61E8D;color:#fff;border:2px solid #000;padding:5px 8px;font-size:11px;letter-spacing:.08em;font-weight:800}
+.feature-copy h2{font-family:'Archivo Black',sans-serif;font-size:clamp(2.3rem,5vw,4.8rem);line-height:.94;border:0;padding:0;margin:23px 0;color:#000}
+.feature-copy h2 span{color:#3D50B3}
+.feature-copy p{font-size:1rem;line-height:1.75;max-width:600px;color:#222}
+.feature-link{display:inline-block;margin:13px 0 0;padding:13px 18px;background:#F7E623;border:3px solid #000;box-shadow:5px 5px 0 #000;color:#000;text-decoration:none;font-weight:800;font-size:.85rem;transition:.15s}
+.feature-link:hover{color:#000;transform:translate(-2px,-2px);box-shadow:7px 7px 0 #000}
+.feature-art{position:relative;background:#3D50B3;min-height:370px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-left:3px solid #000}
+.orb{width:min(67%,280px);aspect-ratio:1;border:4px solid #000;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;background:#F7E623;box-shadow:16px 16px 0 #E61E8D;transform:rotate(-13deg);position:relative;z-index:2}
+.orb span{font-family:'Archivo Black',sans-serif;font-size:clamp(1.1rem,3vw,2.1rem);line-height:1;color:#000}
+.orb span:nth-child(3){color:#E61E8D}
+.feature-caption{position:absolute;bottom:18px;color:#fff;font-size:10px;letter-spacing:.18em;font-weight:800}
+.feature-dot{width:22px;height:22px;position:absolute;background:#EF5B5B;border:2px solid #000}
+.dot-a{top:8%;right:14%}.dot-b{bottom:20%;left:14%;background:#F7E623}.dot-c{top:26%;left:9%;background:#1d8a78}
+@media(max-width:750px){.feature-grid{grid-template-columns:1fr}.feature-art{min-height:250px;border-left:0;border-top:3px solid #000}.orb{width:170px;box-shadow:10px 10px 0 #E61E8D}.orb span{font-size:1.55rem}}
+</style>

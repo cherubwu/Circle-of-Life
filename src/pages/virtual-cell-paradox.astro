@@ -1,0 +1,20 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import articleHtml from '../data/virtual-cell-paradox-article-en.html?raw';
+---
+<html lang="en">
+<head>
+  <BaseHead title="The Virtual Cell Paradox | Circle of Life" description="Can virtual cells predict biology across age, disease, species and perturbations—and do they meaningfully help wet-lab science? An interactive scientific essay." />
+  <link rel="stylesheet" href="/Circle-of-Life/virtual-cell-paradox/essay.css" />
+</head>
+<body>
+  <Header lang="en" pairUrl="/Circle-of-Life/zh/virtual-cell-paradox/" />
+  <div id="vcp-root" class="light">
+    <Fragment set:html={articleHtml} />
+  </div>
+  <Footer />
+  <script is:inline src="/Circle-of-Life/virtual-cell-paradox/essay-en.js" defer></script>
+</body>
+</html>
