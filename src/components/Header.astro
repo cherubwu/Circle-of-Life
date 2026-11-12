@@ -19,7 +19,7 @@ const zhTarget  = lang === 'en' ? (pairUrl ?? '/Circle-of-Life/zh/') : null;
 ---
 <header>
   <nav>
-    <a href="/Circle-of-Life/" class="logo">{title}</a>
+    <a href={lang === 'zh' ? '/Circle-of-Life/zh/' : '/Circle-of-Life/'} class="logo">{title}</a>
     <div class="nav-links">
       <a href={blogPath}>{nav.blog}</a>
       <a href={aboutPath}>{nav.about}</a>
@@ -131,5 +131,12 @@ nav {
 @media (max-width: 600px) {
   .nav-links a { padding: 0 0.7rem; font-size: 0.58rem; }
   .logo { font-size: 0.9rem; padding-right: 1rem; }
+}
+@media (max-width: 600px) {
+  nav {height:auto;flex-wrap:wrap;padding:0 4vw}
+  .logo {width:100%;border-right:0;min-height:48px}
+  .nav-links {width:100%;min-height:44px;justify-content:space-between;flex-wrap:wrap}
+  .nav-links a {font-size:.65rem;padding:0 .55rem}
+  .lang-toggle a,.lang-toggle span {font-size:.65rem!important;padding:0 .55rem!important}
 }
 </style>

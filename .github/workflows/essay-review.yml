@@ -1,0 +1,36 @@
+name: Essay build and browser review
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm install --prefix /tmp/essay-browser-tools playwright@1.51.1
+      - run: /tmp/essay-browser-tools/node_modules/.bin/playwright install --with-deps chromium
+      - name: Test both languages and viewport sizes
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/astro-preview.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail http://localhost:4321/Circle-of-Life/ > /dev/null; then break; fi
+            sleep 1
+          done
+          NODE_PATH=/tmp/essay-browser-tools/node_modules node tests/virtual-cell-paradox.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: virtual-cell-paradox-review
+          path: |
+            screenshots/
+            qa-results.json
+          retention-days: 30
