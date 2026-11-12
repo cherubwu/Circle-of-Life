@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseHead from '../../../components/BaseHead.astro';
 import Header from '../../../components/Header.astro';
+import InteractiveEssayEntry from '../../../components/InteractiveEssayEntry.astro';
 import Footer from '../../../components/Footer.astro';
 
 const base = '/Circle-of-Life';
@@ -29,9 +30,8 @@ const posts = (await getCollection('blog', ({ data }) => data.lang === 'zh'))
       <p class="cat-sub">MASH · GLP-1 · 肝脏 · 胰岛素 · 线粒体</p>
     </header>
 
-    {posts.length === 0
-      ? <p class="empty">即将上线，敬请期待。</p>
-      : <ul class="article-list">
+    <ul class="article-list">
+          <InteractiveEssayEntry lang="zh" />
           {posts.map(post => (
             <li class="article-row">
               <a href={`${base}/zh/blog/${post.id}/`} class="article-link">
@@ -49,7 +49,6 @@ const posts = (await getCollection('blog', ({ data }) => data.lang === 'zh'))
             </li>
           ))}
         </ul>
-    }
   </main>
   <Footer />
 </body>

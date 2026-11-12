@@ -1,0 +1,38 @@
+---
+interface Props { lang: 'en' | 'zh' }
+const { lang } = Astro.props;
+const zh = lang === 'zh';
+const href = `/Circle-of-Life/${zh ? 'zh/' : ''}virtual-cell-paradox/`;
+---
+<li class="interactive-entry">
+  <a href={href} class="entry-link">
+    <div class="entry-info">
+      <time datetime="2026-11-11">{zh ? '2026年11月11日' : 'NOV 11, 2026'}</time>
+      <h2>{zh ? '虚拟细胞悖论 · The Virtual Cell Paradox' : 'The Virtual Cell Paradox'}</h2>
+      <p class="entry-question">{zh ? '我们能否在理解生命之前，预测生命？' : 'Can we predict life without understanding it?'}</p>
+      <p>{zh ? '探索细胞图谱，模拟基因扰动，追问什么才算生物学证据。' : 'Explore cell atlases, test gene perturbations, and question what counts as biological evidence.'}</p>
+      <span class="entry-action">{zh ? '进入交互长文 ↗' : 'EXPLORE THE ESSAY ↗'}</span>
+    </div>
+    <div class="entry-tags">
+      <span>{zh ? '代谢' : 'METABOLISM'}</span>
+      <span>{zh ? '系统生物学' : 'SYSTEMS BIOLOGY'}</span>
+      <span class="format">{zh ? '交互长文 ↗' : 'INTERACTIVE ESSAY ↗'}</span>
+    </div>
+  </a>
+</li>
+<style>
+.interactive-entry{list-style:none;border-bottom:2px solid #000;padding:0}
+.entry-link{display:flex;justify-content:space-between;align-items:flex-start;gap:1.5rem;padding:1.6rem 0;text-decoration:none;color:#171717;font-family:'DM Sans',sans-serif}
+.entry-link:hover,.entry-link:focus-visible{background:#f5edcc;color:#171717}
+.entry-link:focus-visible{outline:3px solid #493070;outline-offset:4px}
+.entry-info{flex:1;min-width:0}
+time{display:block;font-size:.75rem;letter-spacing:.12em;color:#494449;margin-bottom:.65rem}
+h2{font-family:'Archivo Black','Noto Sans SC',sans-serif;font-size:clamp(1.1rem,2.2vw,1.5rem);line-height:1.25;margin:0 0 .5rem;padding:0;border:0;color:#171717}
+p{font-size:.95rem;line-height:1.6;margin:.35rem 0;color:#38323e}
+.entry-question{font-weight:700;color:#35204f}
+.entry-action{display:inline-block;margin-top:.65rem;font-size:.75rem;font-weight:800;color:#35204f}
+.entry-tags{display:flex;flex-wrap:wrap;gap:.4rem;max-width:240px;padding-top:.2rem}
+.entry-tags span{border:2px solid #171717;padding:.35rem .55rem;font-size:.7rem;font-weight:800;letter-spacing:.04em;background:#f7e623;color:#171717}
+.entry-tags span:nth-child(2){background:#e6dcf5}.entry-tags .format{background:#f8d5e7}
+@media(max-width:600px){.entry-link{flex-direction:column;gap:1rem}.entry-tags{max-width:100%}}
+</style>
