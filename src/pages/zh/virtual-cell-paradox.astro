@@ -11,6 +11,11 @@ import articleHtml from '../../data/virtual-cell-paradox-article.html?raw';
 </head>
 <body>
   <Header lang="zh" pairUrl="/Circle-of-Life/virtual-cell-paradox/" />
+  <nav class="essay-breadcrumb" aria-label="当前位置">
+    <a href="/Circle-of-Life/zh/blog/">文章</a><span aria-hidden="true"> / </span>
+    <a href="/Circle-of-Life/zh/blog/metabolism/">代谢</a><span aria-hidden="true"> / </span>
+    <span>交互长文</span>
+  </nav>
   <div id="vcp-root" class="light">
     <Fragment set:html={articleHtml} />
   </div>
@@ -18,3 +23,8 @@ import articleHtml from '../../data/virtual-cell-paradox-article.html?raw';
   <script is:inline src="/Circle-of-Life/virtual-cell-paradox/essay.js" defer></script>
 </body>
 </html>
+
+<style>
+.essay-breadcrumb{max-width:1280px;margin:0 auto;padding:1rem 4vw;display:flex;flex-wrap:wrap;gap:.5rem;font-size:.8rem;color:#35204f}
+.essay-breadcrumb a{color:#35204f;text-underline-offset:3px}
+</style>

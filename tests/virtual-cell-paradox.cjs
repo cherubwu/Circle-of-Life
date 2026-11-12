@@ -36,6 +36,6 @@ for(const lang of ['en','zh'])for(const width of [1440,390]){
  if(errors.length||failed.length||broken.length)throw Error(JSON.stringify({errors,failed,broken}));
  report.push({lang,width,overflow,errors,failed,broken,controls:'all sliders/endpoints, checkboxes, select options, metrics, quiz, company details, theme, paired language route passed'});await page.close();
 }
-for(const route of ['', 'zh/', 'blog/', 'zh/blog/']){const p=await browser.newPage();await p.goto('http://localhost:4321/Circle-of-Life/'+route);if(await p.locator('a[href$="virtual-cell-paradox/"]').count()===0)throw Error('Missing feature '+route);await p.close()}
+for(const route of ['', 'zh/', 'blog/', 'zh/blog/', 'blog/metabolism/', 'zh/blog/metabolism/']){const p=await browser.newPage();await p.goto('http://localhost:4321/Circle-of-Life/'+route);if(await p.locator('a[href$="virtual-cell-paradox/"]').count()===0)throw Error('Missing feature '+route);await p.close()}
 fs.writeFileSync('qa-results.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));await browser.close();
 })();
